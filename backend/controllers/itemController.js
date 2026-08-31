@@ -36,15 +36,15 @@ const getItemByID = async (req, res) => {
 const createItem = async (req, res) => {
     try {
         const {
-            seller_ID,
             name,
             description,
             category,
             start_price,
-            images,
+            images
         } = req.body;
+
         const item = await Item.create({
-            seller_ID,
+            seller_ID: req.user.userId,
             name,
             description,
             category,
@@ -56,37 +56,63 @@ const createItem = async (req, res) => {
         res.status(201).json({
             item: item
         });
-    }
-    catch (error) {
+
+    } catch (error) {
         console.error(error);
 
         res.status(500).json({
             message: "Failed to create Item"
         });
     }
-}
+};
 
 const updateItem = async (req, res) => {
     try {
-        const item = await Item.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
+        const item = await Item.findById(req.params.id);
+
         if (!item) {
             return res.status(404).json({
                 message: "Item not found"
             });
         }
+
+        if (
+            item.seller_ID.toString() !== req.user.userId &&
+            req.user.role !== "admin"
+        ) {
+            return res.status(403).json({
+                message: "You are not allowed to modify this item"
+            });
+        }
+
+        const {
+            name,
+            description,
+            category,
+            start_price,
+            images,
+            status
+        } = req.body;
+
+        item.name = name ?? item.name;
+        item.description = description ?? item.description;
+        item.category = category ?? item.category;
+        item.start_price = start_price ?? item.start_price;
+        item.images = images ?? item.images;
+        item.status = status ?? item.status;
+
+        await item.save();
+
         res.status(200).json(item);
-    }
-    catch (error) {
+
+    } catch (error) {
         console.error(error);
+
         res.status(500).json({
             message: "Failed to update item"
         });
     }
-}
+};
 
 const deleteItem = async (req, res) => {
     try {

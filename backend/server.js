@@ -9,6 +9,8 @@ import buyerRoutes from "./routes/buyerRoutes.js";
 import auctioneerRoutes from "./routes/auctioneerRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import itemRoutes from "./routes/itemRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
 
 dotenv.config();
 
@@ -32,6 +34,10 @@ app.use("/api/auctioneers", auctioneerRoutes);
 app.use("/api/admins", adminRoutes);
 
 app.use("/api/items", itemRoutes);
+
+app.use("/api/auth", authRoutes);
+
+app.use("/api/test", testRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
