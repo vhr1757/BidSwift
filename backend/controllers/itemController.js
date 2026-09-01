@@ -116,12 +116,23 @@ const updateItem = async (req, res) => {
 
 const deleteItem = async (req, res) => {
     try {
-        const item = await Item.findByIdAndDelete(req.params.id);
+        const item = await Item.findById(req.params.id);
         if (!item) {
             return res.status(404).json({
                 message: "Item not found"
             });
         }
+         if(
+            item.seller_ID.toString() !== req.user.userId &&
+            req.user.role !== "admin"
+        ) {
+            return res.status(403).json({
+                message: "You are not allowed to delete this item"
+            });
+        }
+
+        await item.remove();
+
         res.status(200).json({
             message: "Item deleted successfully"
         });
