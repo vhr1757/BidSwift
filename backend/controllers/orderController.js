@@ -3,11 +3,45 @@ import Item from "../models/Item.js";
 
 const getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find()
-            .populate("buyer_ID", "-password")
-            .populate("item_ID");
+        let orders;
 
-        res.status(200).json(orders);
+        if (req.user.role === "admin") {
+            orders = await Order.find()
+                .populate("buyer_ID", "-password")
+                .populate("item_ID");
+
+            return res.status(200).json(orders);
+        }
+
+        if (req.user.role === "buyer") {
+            orders = await Order.find({
+                buyer_ID: req.user.userId
+            })
+                .populate("buyer_ID", "-password")
+                .populate("item_ID");
+
+            return res.status(200).json(orders);
+        }
+
+        if (req.user.role === "seller") {
+            const items = await Item.find({
+                seller_ID: req.user.userId
+            }).select("_id");
+
+            const itemIds = items.map(item => item._id);
+
+            orders = await Order.find({
+                item_ID: { $in: itemIds }
+            })
+                .populate("buyer_ID", "-password")
+                .populate("item_ID");
+
+            return res.status(200).json(orders);
+        }
+
+        return res.status(403).json({
+            message: "You are not allowed to view orders"
+        });
     }
     catch (error) {
         console.error(error);
@@ -16,7 +50,7 @@ const getAllOrders = async (req, res) => {
             message: "Failed to fetch orders"
         });
     }
-}
+};
 
 const getOrderByID = async (req, res) => {
     try {
@@ -99,9 +133,31 @@ const updateOrder = async (req, res) => {
             });
         }
 
-        const {
-            status
-        } = req.body;
+        if (req.user.role === "admin") {
+            const { status } = req.body;
+
+            order.status = status ?? order.status;
+
+            await order.save();
+
+            return res.status(200).json(order);
+        }
+
+        const item = await Item.findById(order.item_ID);
+
+        if (!item) {
+            return res.status(404).json({
+                message: "Item associated with this order not found"
+            });
+        }
+
+        if (item.seller_ID.toString() !== req.user.userId) {
+            return res.status(403).json({
+                message: "You are not allowed to update this order"
+            });
+        }
+
+        const { status } = req.body;
 
         order.status = status ?? order.status;
 

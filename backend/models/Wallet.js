@@ -20,7 +20,13 @@ const walletSchema = new mongoose.Schema(
             type: Number,
             required: true,
             default: 0,
-            min: 0
+            min: 0,
+            validate: {
+                validator: function (value) {
+                    return value <= this.balance;
+                },
+                message: "Frozen amount cannot exceed wallet balance"
+            }
         },
 
         transaction_history: [
@@ -34,7 +40,7 @@ const walletSchema = new mongoose.Schema(
                 amount: {
                     type: Number,
                     required: true,
-                    min: 0
+                    min: 0.01
                 },
 
                 createdAt: {

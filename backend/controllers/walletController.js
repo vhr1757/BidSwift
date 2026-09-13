@@ -27,30 +27,39 @@ const deposit = async (req, res) => {
     try {
         const { amount } = req.body;
 
-        if (!amount || amount <= 0) {
+        if (
+            typeof amount !== "number" ||
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
             return res.status(400).json({
-                message: "Amount must be greater than 0"
+                message: "Amount must be a valid number greater than 0"
             });
         }
 
-        let wallet = await Wallet.findOne({
-            buyer_ID: req.user.userId
-        });
-
-        if (!wallet) {
-            wallet = await Wallet.create({
+        const wallet = await Wallet.findOneAndUpdate(
+            {
                 buyer_ID: req.user.userId
-            });
-        }
+            },
+            {
+                $inc: {
+                    balance: amount
+                },
 
-        wallet.balance += amount;
-
-        wallet.transaction_history.push({
-            type: "deposit",
-            amount
-        });
-
-        await wallet.save();
+                $push: {
+                    transaction_history: {
+                        type: "deposit",
+                        amount
+                    }
+                }
+            },
+            {
+                new: true,
+                runValidators: true,
+                upsert: true,
+                setDefaultsOnInsert: true
+            }
+        );
 
         res.status(200).json({
             message: "Amount deposited successfully",
@@ -70,39 +79,65 @@ const withdraw = async (req, res) => {
     try {
         const { amount } = req.body;
 
-        if (!amount || amount <= 0) {
+        if (
+            typeof amount !== "number" ||
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
             return res.status(400).json({
-                message: "Amount must be greater than 0"
+                message: "Amount must be a valid number greater than 0"
             });
         }
 
-        const wallet = await Wallet.findOne({
-            buyer_ID: req.user.userId
-        });
+        const wallet = await Wallet.findOneAndUpdate(
+            {
+                buyer_ID: req.user.userId,
+
+                $expr: {
+                    $gte: [
+                        {
+                            $subtract: [
+                                "$balance",
+                                "$frozen_amount"
+                            ]
+                        },
+                        amount
+                    ]
+                }
+            },
+            {
+                $inc: {
+                    balance: -amount
+                },
+
+                $push: {
+                    transaction_history: {
+                        type: "withdraw",
+                        amount
+                    }
+                }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
 
         if (!wallet) {
-            return res.status(404).json({
-                message: "Wallet not found"
+            const existingWallet = await Wallet.findOne({
+                buyer_ID: req.user.userId
             });
-        }
 
-        const availableBalance =
-            wallet.balance - wallet.frozen_amount;
+            if (!existingWallet) {
+                return res.status(404).json({
+                    message: "Wallet not found"
+                });
+            }
 
-        if (amount > availableBalance) {
             return res.status(400).json({
                 message: "Insufficient available balance"
             });
         }
-
-        wallet.balance -= amount;
-
-        wallet.transaction_history.push({
-            type: "withdraw",
-            amount
-        });
-
-        await wallet.save();
 
         res.status(200).json({
             message: "Amount withdrawn successfully",
@@ -122,39 +157,65 @@ const freezeAmount = async (req, res) => {
     try {
         const { amount } = req.body;
 
-        if (!amount || amount <= 0) {
+        if (
+            typeof amount !== "number" ||
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
             return res.status(400).json({
-                message: "Amount must be greater than 0"
+                message: "Amount must be a valid number greater than 0"
             });
         }
 
-        const wallet = await Wallet.findOne({
-            buyer_ID: req.user.userId
-        });
+        const wallet = await Wallet.findOneAndUpdate(
+            {
+                buyer_ID: req.user.userId,
+
+                $expr: {
+                    $gte: [
+                        {
+                            $subtract: [
+                                "$balance",
+                                "$frozen_amount"
+                            ]
+                        },
+                        amount
+                    ]
+                }
+            },
+            {
+                $inc: {
+                    frozen_amount: amount
+                },
+
+                $push: {
+                    transaction_history: {
+                        type: "freeze",
+                        amount
+                    }
+                }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
 
         if (!wallet) {
-            return res.status(404).json({
-                message: "Wallet not found"
+            const existingWallet = await Wallet.findOne({
+                buyer_ID: req.user.userId
             });
-        }
 
-        const availableBalance =
-            wallet.balance - wallet.frozen_amount;
+            if (!existingWallet) {
+                return res.status(404).json({
+                    message: "Wallet not found"
+                });
+            }
 
-        if (amount > availableBalance) {
             return res.status(400).json({
                 message: "Insufficient available balance"
             });
         }
-
-        wallet.frozen_amount += amount;
-
-        wallet.transaction_history.push({
-            type: "freeze",
-            amount
-        });
-
-        await wallet.save();
 
         res.status(200).json({
             message: "Amount frozen successfully",
@@ -174,36 +235,57 @@ const unfreezeAmount = async (req, res) => {
     try {
         const { amount } = req.body;
 
-        if (!amount || amount <= 0) {
+        if (
+            typeof amount !== "number" ||
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
             return res.status(400).json({
-                message: "Amount must be greater than 0"
+                message: "Amount must be a valid number greater than 0"
             });
         }
 
-        const wallet = await Wallet.findOne({
-            buyer_ID: req.user.userId
-        });
+        const wallet = await Wallet.findOneAndUpdate(
+            {
+                buyer_ID: req.user.userId,
+
+                frozen_amount: {
+                    $gte: amount
+                }
+            },
+            {
+                $inc: {
+                    frozen_amount: -amount
+                },
+
+                $push: {
+                    transaction_history: {
+                        type: "unfreeze",
+                        amount
+                    }
+                }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
 
         if (!wallet) {
-            return res.status(404).json({
-                message: "Wallet not found"
+            const existingWallet = await Wallet.findOne({
+                buyer_ID: req.user.userId
             });
-        }
 
-        if (amount > wallet.frozen_amount) {
+            if (!existingWallet) {
+                return res.status(404).json({
+                    message: "Wallet not found"
+                });
+            }
+
             return res.status(400).json({
                 message: "Amount exceeds frozen balance"
             });
         }
-
-        wallet.frozen_amount -= amount;
-
-        wallet.transaction_history.push({
-            type: "unfreeze",
-            amount
-        });
-
-        await wallet.save();
 
         res.status(200).json({
             message: "Amount unfrozen successfully",
