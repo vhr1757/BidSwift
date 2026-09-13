@@ -5,9 +5,7 @@ import authorizeRoles from "../middlewares/roleMiddleware.js";
 import {
     getAllBids,
     getBidByID,
-    createBid,
-    updateBid,
-    deleteBid
+    createBid
 } from "../controllers/bidController.js";
 
 const router = express.Router();
@@ -21,20 +19,6 @@ router.post(
     authMiddleware,
     authorizeRoles("buyer"),
     createBid
-);
-
-router.put(
-    "/:id",
-    authMiddleware,
-    authorizeRoles("buyer"),
-    updateBid
-);
-
-router.delete(
-    "/:id",
-    authMiddleware,
-    authorizeRoles("buyer", "admin"),
-    deleteBid
 );
 
 export default router;

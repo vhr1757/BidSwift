@@ -45,8 +45,46 @@ const createAuction = async (req, res) => {
         const {
             item_ID,
             start_time,
-            end_time
+            end_time,
+            bid_increment
         } = req.body;
+
+        if (!item_ID || !start_time || !end_time) {
+            return res.status(400).json({
+                message: "Item ID, start time and end time are required"
+            });
+        }
+
+        if (
+            bid_increment !== undefined &&
+            (
+                typeof bid_increment !== "number" ||
+                !Number.isFinite(bid_increment) ||
+                bid_increment <= 0
+            )
+        ) {
+            return res.status(400).json({
+                message: "Bid increment must be a valid number greater than 0"
+            });
+        }
+
+        const startDate = new Date(start_time);
+        const endDate = new Date(end_time);
+
+        if (
+            Number.isNaN(startDate.getTime()) ||
+            Number.isNaN(endDate.getTime())
+        ) {
+            return res.status(400).json({
+                message: "Invalid start or end time"
+            });
+        }
+
+        if (startDate >= endDate) {
+            return res.status(400).json({
+                message: "End time must be after start time"
+            });
+        }
 
         const item = await Item.findById(item_ID);
 
@@ -59,13 +97,17 @@ const createAuction = async (req, res) => {
         const auction = await Auction.create({
             item_ID,
             auctioneer_ID: req.user.userId,
-            start_time,
-            end_time,
+            start_time: startDate,
+            end_time: endDate,
+            bid_increment: bid_increment ?? 1,
+            highest_bidder_ID: null,
+            highest_bid_amount: null,
             status: "scheduled"
         });
 
         res.status(201).json({
-            auction: auction
+            message: "Auction created successfully",
+            auction
         });
 
     } catch (error) {
@@ -101,16 +143,76 @@ const updateAuction = async (req, res) => {
         const {
             start_time,
             end_time,
-            status
+            status,
+            bid_increment
         } = req.body;
 
-        auction.start_time = start_time ?? auction.start_time;
-        auction.end_time = end_time ?? auction.end_time;
-        auction.status = status ?? auction.status;
+        if (
+            bid_increment !== undefined &&
+            (
+                typeof bid_increment !== "number" ||
+                !Number.isFinite(bid_increment) ||
+                bid_increment <= 0
+            )
+        ) {
+            return res.status(400).json({
+                message: "Bid increment must be a valid number greater than 0"
+            });
+        }
+
+        if (
+            bid_increment !== undefined &&
+            auction.status !== "scheduled"
+        ) {
+            return res.status(400).json({
+                message: "Bid increment can only be changed for scheduled auctions"
+            });
+        }
+
+        if (start_time !== undefined) {
+            const startDate = new Date(start_time);
+
+            if (Number.isNaN(startDate.getTime())) {
+                return res.status(400).json({
+                    message: "Invalid start time"
+                });
+            }
+
+            auction.start_time = startDate;
+        }
+
+        if (end_time !== undefined) {
+            const endDate = new Date(end_time);
+
+            if (Number.isNaN(endDate.getTime())) {
+                return res.status(400).json({
+                    message: "Invalid end time"
+                });
+            }
+
+            auction.end_time = endDate;
+        }
+
+        if (auction.start_time >= auction.end_time) {
+            return res.status(400).json({
+                message: "End time must be after start time"
+            });
+        }
+
+        if (bid_increment !== undefined) {
+            auction.bid_increment = bid_increment;
+        }
+
+        if (status !== undefined) {
+            auction.status = status;
+        }
 
         await auction.save();
 
-        res.status(200).json(auction);
+        res.status(200).json({
+            message: "Auction updated successfully",
+            auction
+        });
 
     } catch (error) {
         console.error(error);

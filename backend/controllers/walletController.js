@@ -37,29 +37,39 @@ const deposit = async (req, res) => {
             });
         }
 
-        const wallet = await Wallet.findOneAndUpdate(
-            {
-                buyer_ID: req.user.userId
-            },
-            {
-                $inc: {
-                    balance: amount
-                },
+        let wallet = await Wallet.findOne({
+            buyer_ID: req.user.userId
+        });
 
-                $push: {
-                    transaction_history: {
+        if (!wallet) {
+
+            wallet = await Wallet.create({
+                buyer_ID: req.user.userId,
+                balance: amount,
+                frozen_amount: 0,
+
+                transaction_history: [
+                    {
                         type: "deposit",
                         amount
                     }
-                }
-            },
-            {
-                new: true,
-                runValidators: true,
-                upsert: true,
-                setDefaultsOnInsert: true
-            }
-        );
+                ]
+            });
+
+        }
+
+        else {
+
+            wallet.balance += amount;
+
+            wallet.transaction_history.push({
+                type: "deposit",
+                amount
+            });
+
+            await wallet.save();
+
+        }
 
         res.status(200).json({
             message: "Amount deposited successfully",
