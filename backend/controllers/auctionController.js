@@ -259,10 +259,253 @@ const deleteAuction = async (req, res) => {
     }
 }
 
+const completeAuction = async (req, res) => {
+
+    const session = await mongoose.startSession();
+
+
+    try {
+
+        let completedAuction;
+        let createdOrder = null;
+
+
+        await runTransactionWithRetry(
+            session,
+
+            async () => {
+
+                const auction = await Auction.findById(
+                    req.params.id
+                )
+                    .populate("item_ID")
+                    .session(session);
+
+
+                if (!auction) {
+                    throw new Error("AUCTION_NOT_FOUND");
+                }
+
+                if (auction.status === "completed") {
+                    throw new Error("AUCTION_ALREADY_COMPLETED");
+                }
+
+                if (auction.status !== "active") {
+                    throw new Error("AUCTION_NOT_ACTIVE");
+                }
+
+                const now = new Date();
+
+                if (now < auction.end_time) {
+                    throw new Error("AUCTION_NOT_ENDED");
+                }
+
+                if (!auction.item_ID) {
+                    throw new Error("ITEM_NOT_FOUND");
+                }
+
+                // If there is no highest bidder or highest bid amount, we can mark the auction as completed without creating an order or modifying any wallets.
+                if (
+                    auction.highest_bidder_ID === null ||
+                    auction.highest_bid_amount === null
+                ) {
+
+                    auction.status = "completed";
+
+
+                    await auction.save({
+                        session
+                    });
+
+
+                    completedAuction = auction;
+
+                    return;
+                }
+
+                const winnerWallet = await Wallet.findOne({
+                        buyer_ID: auction.highest_bidder_ID
+                    }).session(session);
+
+                if (!winnerWallet) {
+                    throw new Error(
+                        "WINNER_WALLET_NOT_FOUND"
+                    );
+                }
+
+                const winningAmount = auction.highest_bid_amount;
+
+                if (
+                    winnerWallet.frozen_amount < winningAmount
+                ) {
+                    throw new Error(
+                        "WINNER_FREEZE_INCONSISTENT"
+                    );
+                }
+
+                if (
+                    winnerWallet.balance < winningAmount
+                ) {
+                    throw new Error(
+                        "WINNER_INSUFFICIENT_BALANCE"
+                    );
+                }
+
+                winnerWallet.balance -= winningAmount;
+                winnerWallet.frozen_amount -= winningAmount;
+
+                winnerWallet.transaction_history.push({
+                    type: "payment",
+                    amount: winningAmount
+                });
+
+                await winnerWallet.save({
+                    session
+                });
+
+                createdOrder = await Order.create(
+                    [
+                        {
+                            buyer_ID: auction.highest_bidder_ID,
+                            item_ID: auction.item_ID._id,
+                            total_amount: winningAmount,
+                            status: "confirmed"
+                        }
+                    ],
+                    {
+                        session
+                    }
+                );
+
+                createdOrder = createdOrder[0];
+
+                auction.item_ID.status = "sold";
+
+                await auction.item_ID.save({
+                    session
+                });
+
+                auction.status = "completed";
+
+                await auction.save({
+                    session
+                });
+
+                completedAuction = auction;
+            },
+            3
+        );
+
+        return res.status(200).json({
+            message: "Auction completed and winner settlement successful",
+            auction: completedAuction,
+            order: createdOrder
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        if (error.message === "AUCTION_NOT_FOUND") {
+            return res.status(404).json({
+                message: "Auction not found"
+            });
+        }
+
+        if (
+            error.message === "AUCTION_ALREADY_COMPLETED"
+        ) {
+            return res.status(400).json({
+                message: "Auction has already been completed"
+            });
+        }
+
+        if (
+            error.message === "AUCTION_NOT_ACTIVE"
+        ) {
+            return res.status(400).json({
+                message: "Auction is not active"
+            });
+        }
+
+        if (
+            error.message === "AUCTION_NOT_ENDED"
+        ) {
+            return res.status(400).json({
+                message:
+                    "Auction cannot be completed before its end time"
+            });
+        }
+
+        if (
+            error.message === "ITEM_NOT_FOUND"
+        ) {
+            return res.status(404).json({
+                message:
+                    "Item associated with this auction not found"
+            });
+        }
+
+        if (
+            error.message === "WINNER_WALLET_NOT_FOUND"
+        ) {
+            return res.status(404).json({
+                message:
+                    "Winner wallet not found"
+            });
+        }
+
+        if (
+            error.message === "WINNER_FREEZE_INCONSISTENT"
+        ) {
+            return res.status(500).json({
+                message:
+                    "Winner wallet reservation is inconsistent"
+            });
+        }
+
+        if (
+            error.message === "WINNER_INSUFFICIENT_BALANCE"
+        ) {
+            return res.status(400).json({
+                message:
+                    "Winner does not have enough wallet balance to complete payment"
+            });
+        }
+
+        if (
+            error.hasErrorLabel &&
+            (
+                error.hasErrorLabel(
+                    "TransientTransactionError"
+                ) ||
+                error.hasErrorLabel(
+                    "UnknownTransactionCommitResult"
+                )
+            )
+        ) {
+            return res.status(409).json({
+                message:
+                    "Auction settlement could not be completed because the auction changed. Please try again."
+            });
+        }
+
+        return res.status(500).json({
+            message:
+                "Failed to complete auction"
+        });
+    }
+
+    finally {
+        await session.endSession();
+    }
+};
+
 export {
     getAllAuctions,
     getAuctionByID,
     createAuction,
     updateAuction,
-    deleteAuction
+    deleteAuction,
+    completeAuction
 };

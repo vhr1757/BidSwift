@@ -7,7 +7,8 @@ import {
     getAuctionByID,
     createAuction,
     updateAuction,
-    deleteAuction
+    deleteAuction,
+    completeAuction
 } from "../controllers/auctionController.js";
 
 const router = express.Router();
@@ -35,6 +36,13 @@ router.delete(
     authMiddleware,
     authorizeRoles("auctioneer", "admin"),
     deleteAuction
+);
+
+router.post(
+    "/:id/complete",
+    authMiddleware,
+    authorizeRoles("auctioneer", "admin"),
+    completeAuction
 );
 
 export default router;
