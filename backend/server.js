@@ -2,8 +2,9 @@ import dns from "dns";
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 import express from "express";
-import dotenv from "dotenv";
+import "dotenv/config";
 import connectDB from "./config/db.js";
+import redisClient from "./config/redis.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import buyerRoutes from "./routes/buyerRoutes.js";
 import auctioneerRoutes from "./routes/auctioneerRoutes.js";
@@ -16,12 +17,14 @@ import bidRoutes from "./routes/bidRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 
-dotenv.config();
 
 const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
+
+await redisClient.connect();
+console.log("Redis connected successfully");
 
 connectDB();
 

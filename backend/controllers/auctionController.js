@@ -1,5 +1,6 @@
 import Auction from "../models/Auction.js";
 import Item from "../models/Item.js";
+import redisClient from "../config/redis.js";
 
 const getAllAuctions = async (req, res) => {
     try {
@@ -19,14 +20,56 @@ const getAllAuctions = async (req, res) => {
 
 const getAuctionByID = async (req, res) => {
     try {
+        const auctionId = req.params.id;
+
+        let cachedAuction = null;
+
+        try {
+            cachedAuction = await redisClient.get(
+                `auction:${auctionId}`
+            );
+        }
+        catch (redisError) {
+            console.error(
+                "Redis unavailable, using MongoDB:",
+                redisError.message
+            );
+        }
+
+        if (cachedAuction) {
+            console.log("Redis cache HIT");
+
+            return res.status(200).json(
+                JSON.parse(cachedAuction)
+            );
+        }
+
+        console.log("Redis cache MISS");
+
         const auction = await Auction.findById(
-            req.params.id
+            auctionId
         ).populate("item_ID");
 
         if (!auction) {
             return res.status(404).json({
                 message: "Auction not found"
             });
+        }
+
+        try {
+            await redisClient.set(
+                `auction:${auctionId}`,
+                JSON.stringify(auction),
+                {
+                    EX: 30
+                }
+            );
+        }
+        catch (redisError) {
+            console.error(
+                "Failed to cache auction:",
+                redisError.message
+            );
         }
 
         res.status(200).json(auction);
@@ -38,7 +81,7 @@ const getAuctionByID = async (req, res) => {
             message: "Failed to fetch auction"
         });
     }
-}
+};
 
 const createAuction = async (req, res) => {
     try {

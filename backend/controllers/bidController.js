@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Bid from "../models/Bid.js";
 import Auction from "../models/Auction.js";
 import Wallet from "../models/Wallet.js";
+import redisClient from "../config/redis.js";
 import runTransactionWithRetry from "../utils/transactionRetry.js";
 
 const getAllBids = async (req, res) => {
@@ -227,6 +228,16 @@ const createBid = async (req, res) => {
             },
             3
         );
+
+        try {
+            await redisClient.del(`auction:${auction_ID}`);
+        }
+        catch (redisError) {
+            console.error(
+                "Failed to invalidate auction cache:",
+                redisError.message
+            );
+        }
 
         res.status(201).json({
             message: "Bid placed successfully",
