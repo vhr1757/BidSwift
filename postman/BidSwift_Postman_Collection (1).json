@@ -1,0 +1,1219 @@
+{
+  "info": {
+    "name": "BidSwift API \u2013 Complete Test Collection",
+    "description": "Complete Postman collection covering every request currently defined in the BidSwift backend route files. Base URL defaults to http://localhost:3000. Protected requests use the accessToken collection variable. This collection contains placeholders and test credentials only; replace emails/passwords as needed for your local database.\n\nSuggested core-flow order: register/login buyer and seller \u2192 create/fund buyer wallet \u2192 create seller item \u2192 create/login auctioneer \u2192 create auction and set it active \u2192 login buyer \u2192 place bid \u2192 move auction end_time into the past \u2192 complete auction. Admin-only bill requests require an admin account/token. Some CRUD endpoints are intentionally unprotected because that is how the current backend route files are defined.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "buyerToken",
+      "value": ""
+    },
+    {
+      "key": "sellerToken",
+      "value": ""
+    },
+    {
+      "key": "auctioneerToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "buyerId",
+      "value": ""
+    },
+    {
+      "key": "sellerId",
+      "value": ""
+    },
+    {
+      "key": "auctioneerId",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": ""
+    },
+    {
+      "key": "itemId",
+      "value": ""
+    },
+    {
+      "key": "auctionId",
+      "value": ""
+    },
+    {
+      "key": "bidId",
+      "value": ""
+    },
+    {
+      "key": "walletId",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "billId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 \u2013 Authentication",
+      "item": [
+        {
+          "name": "Register Buyer Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Postman\",\n  \"last_name\": \"Buyer\",\n  \"email\": \"postman.buyer@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"buyer\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) { const j=pm.response.json(); pm.collectionVariables.set('buyerId', j.user.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register Seller Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Postman\",\n  \"last_name\": \"Seller\",\n  \"email\": \"postman.seller@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"seller\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) { const j=pm.response.json(); pm.collectionVariables.set('sellerId', j.user.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Buyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman.buyer@example.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login successful',()=>pm.response.code===200);",
+                  "if(pm.response.code===200){const j=pm.response.json();pm.collectionVariables.set('buyerToken',j.token);pm.collectionVariables.set('accessToken',j.token);pm.collectionVariables.set('buyerId',j.user.id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Seller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman.seller@example.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){const j=pm.response.json();pm.collectionVariables.set('sellerToken',j.token);pm.collectionVariables.set('accessToken',j.token);pm.collectionVariables.set('sellerId',j.user.id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Auctioneer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"api.auctioneer@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){const j=pm.response.json();pm.collectionVariables.set('auctioneerToken',j.token);pm.collectionVariables.set('accessToken',j.token);pm.collectionVariables.set('auctioneerId',j.user.id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"api.admin@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){const j=pm.response.json();pm.collectionVariables.set('adminToken',j.token);pm.collectionVariables.set('accessToken',j.token);pm.collectionVariables.set('adminId',j.user.id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update My Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/password",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password123!\",\n  \"newPassword\": \"Password1234!\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 \u2013 Buyer Management",
+      "item": [
+        {
+          "name": "List All Buyers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/buyers"
+          }
+        },
+        {
+          "name": "Get Buyer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/buyers/{{buyerId}}"
+          }
+        },
+        {
+          "name": "Create Buyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/buyers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"API\",\n  \"last_name\": \"Buyer\",\n  \"email\": \"api.buyer.unique@example.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Buyer by ID",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/buyers/{{buyerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Buyer\",\n  \"email\": \"updated.buyer@example.com\",\n  \"password\": \"Password123!\",\n  \"wallet_ID\": \"{{walletId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Buyer by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/buyers/{{buyerId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 \u2013 Seller Management",
+      "item": [
+        {
+          "name": "List All Sellers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/sellers"
+          }
+        },
+        {
+          "name": "Get Seller by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/sellers/{{sellerId}}"
+          }
+        },
+        {
+          "name": "Create Seller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/sellers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"API\",\n  \"last_name\": \"Seller\",\n  \"email\": \"api.seller.unique@example.com\",\n  \"password\": \"Password123!\",\n  \"seller_rating\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Seller by ID",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/sellers/{{sellerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Seller\",\n  \"email\": \"updated.seller@example.com\",\n  \"password\": \"Password123!\",\n  \"seller_rating\": 4.5\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Seller by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/sellers/{{sellerId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 \u2013 Auctioneer Management",
+      "item": [
+        {
+          "name": "List All Auctioneers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auctioneers"
+          }
+        },
+        {
+          "name": "Get Auctioneer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auctioneers/{{auctioneerId}}"
+          }
+        },
+        {
+          "name": "Create Auctioneer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auctioneers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"API\",\n  \"last_name\": \"Auctioneer\",\n  \"email\": \"api.auctioneer@example.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===201){const j=pm.response.json();if(j._id)pm.collectionVariables.set('auctioneerId',j._id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Auctioneer by ID",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auctioneers/{{auctioneerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Auctioneer\",\n  \"email\": \"updated.auctioneer@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"auctioneer\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Auctioneer by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/auctioneers/{{auctioneerId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 \u2013 Admin Management",
+      "item": [
+        {
+          "name": "List All Admins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admins"
+          }
+        },
+        {
+          "name": "Get Admin by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/admins/{{adminId}}"
+          }
+        },
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admins",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"API\",\n  \"last_name\": \"Admin\",\n  \"email\": \"api.admin@example.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===201){const j=pm.response.json();if(j._id)pm.collectionVariables.set('adminId',j._id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Admin by ID",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admins/{{adminId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Admin\",\n  \"email\": \"updated.admin@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"admin\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Admin by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/admins/{{adminId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 \u2013 Item Management",
+      "item": [
+        {
+          "name": "List All Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/items"
+          }
+        },
+        {
+          "name": "Get Item by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/items/{{itemId}}"
+          }
+        },
+        {
+          "name": "Create Item as Seller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/items",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Item\",\n  \"description\": \"Item created for API testing\",\n  \"category\": \"Electronics\",\n  \"start_price\": 1000,\n  \"images\": [\n    \"https://example.com/item.jpg\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===201){const j=pm.response.json();if(j.item&&j.item._id)pm.collectionVariables.set('itemId',j.item._id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Item as Seller or Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/items/{{itemId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Postman Test Item\",\n  \"description\": \"Updated API test item\",\n  \"category\": \"Electronics\",\n  \"start_price\": 1200,\n  \"images\": [],\n  \"status\": \"available\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Item as Seller or Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/items/{{itemId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 \u2013 Auction Management",
+      "item": [
+        {
+          "name": "List All Auctions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auctions"
+          }
+        },
+        {
+          "name": "Get Auction by ID \u2013 Redis Cache",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auctions/{{auctionId}}"
+          }
+        },
+        {
+          "name": "Create Auction as Auctioneer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auctions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_ID\": \"{{itemId}}\",\n  \"start_time\": \"2026-01-01T00:00:00.000Z\",\n  \"end_time\": \"2099-01-01T00:00:00.000Z\",\n  \"bid_increment\": 100\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===201){const j=pm.response.json();if(j.auction&&j.auction._id)pm.collectionVariables.set('auctionId',j.auction._id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Auction \u2013 Set Active",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auctions/{{auctionId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"start_time\": \"2026-01-01T00:00:00.000Z\",\n  \"end_time\": \"2099-01-01T00:00:00.000Z\",\n  \"bid_increment\": 100,\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Complete Auction \u2013 Settle Winner",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/auctions/{{auctionId}}/complete",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Auction",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/auctions/{{auctionId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 \u2013 Wallet Management",
+      "item": [
+        {
+          "name": "Get My Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/wallets/me",
+            "body": {
+              "mode": "raw",
+              "raw": "true"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){const j=pm.response.json();if(j._id)pm.collectionVariables.set('walletId',j._id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deposit Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/wallets/deposit",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000\n}"
+            }
+          }
+        },
+        {
+          "name": "Withdraw Available Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/wallets/withdraw",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500\n}"
+            }
+          }
+        },
+        {
+          "name": "Freeze Wallet Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/wallets/freeze",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            }
+          }
+        },
+        {
+          "name": "Unfreeze Wallet Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/wallets/unfreeze",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 \u2013 Bidding",
+      "item": [
+        {
+          "name": "List All Bids",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/bids"
+          }
+        },
+        {
+          "name": "Get Bid by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/bids/{{bidId}}"
+          }
+        },
+        {
+          "name": "Place Bid as Buyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bids",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"auction_ID\": \"{{auctionId}}\",\n  \"amount\": 1100\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===201){const j=pm.response.json();if(j.bid&&j.bid._id)pm.collectionVariables.set('bidId',j.bid._id);}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 \u2013 Order Management",
+      "item": [
+        {
+          "name": "List Accessible Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "true"
+            }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "true"
+            }
+          }
+        },
+        {
+          "name": "Create Order as Buyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_ID\": \"{{itemId}}\",\n  \"total_amount\": 1200\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===201){const j=pm.response.json();if(j.order&&j.order._id)pm.collectionVariables.set('orderId',j.order._id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shipped\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Order",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 \u2013 Bill Management",
+      "item": [
+        {
+          "name": "List Accessible Bills",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bills",
+            "body": {
+              "mode": "raw",
+              "raw": "true"
+            }
+          }
+        },
+        {
+          "name": "Get Bill by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bills/{{billId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "true"
+            }
+          }
+        },
+        {
+          "name": "Create Bill as Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bills",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_ID\": \"{{orderId}}\",\n  \"tax\": 100\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===201){const j=pm.response.json();if(j.bill&&j.bill._id)pm.collectionVariables.set('billId',j.bill._id);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Bill Payment Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bills/{{billId}}/payment",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_status\": \"paid\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Bill",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bills/{{billId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "true"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

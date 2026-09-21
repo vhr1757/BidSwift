@@ -3,6 +3,7 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 import express from "express";
 import "dotenv/config";
+import cors from "cors";
 import connectDB from "./config/db.js";
 import redisClient from "./config/redis.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
@@ -20,6 +21,12 @@ import orderRoutes from "./routes/orderRoutes.js";
 
 const app = express();
 app.use(express.json());
+
+app.use(
+    cors({
+        origin: "http://localhost:5173"
+    })
+);
 
 const PORT = process.env.PORT || 3000;
 

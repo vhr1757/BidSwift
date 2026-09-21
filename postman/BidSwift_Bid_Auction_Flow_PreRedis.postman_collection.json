@@ -1,0 +1,1363 @@
+{
+  "info": {
+    "_postman_id": "bidswift-bid-auction-pre-redis-v1",
+    "name": "BidSwift - Bid & Auction Flow (A-Z Pre-Redis)",
+    "description": "Run in order. Tests the completed Bid/Auction core flow with wallet reservation before Redis.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "sellerToken",
+      "value": ""
+    },
+    {
+      "key": "seller2Token",
+      "value": ""
+    },
+    {
+      "key": "buyerToken",
+      "value": ""
+    },
+    {
+      "key": "buyer2Token",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "sellerId",
+      "value": ""
+    },
+    {
+      "key": "seller2Id",
+      "value": ""
+    },
+    {
+      "key": "buyerId",
+      "value": ""
+    },
+    {
+      "key": "buyer2Id",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": ""
+    },
+    {
+      "key": "itemId",
+      "value": ""
+    },
+    {
+      "key": "auctionId",
+      "value": ""
+    },
+    {
+      "key": "bid1Id",
+      "value": ""
+    },
+    {
+      "key": "bid2Id",
+      "value": ""
+    },
+    {
+      "key": "bid3Id",
+      "value": ""
+    },
+    {
+      "key": "walletId",
+      "value": ""
+    },
+    {
+      "key": "wallet2Id",
+      "value": ""
+    },
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Health Check",
+      "item": [
+        {
+          "name": "Server Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Authentication & Test Users",
+      "item": [
+        {
+          "name": "Register Seller A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"first_name\": \"Seller\", \"last_name\": \"One\", \"email\": \"seller1@test.com\", \"password\": \"Seller123\", \"role\": \"seller\"}"
+            }
+          }
+        },
+        {
+          "name": "Register Seller B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"first_name\": \"Seller\", \"last_name\": \"Two\", \"email\": \"seller2@test.com\", \"password\": \"Seller123\", \"role\": \"seller\"}"
+            }
+          }
+        },
+        {
+          "name": "Register Buyer A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"first_name\": \"Buyer\", \"last_name\": \"One\", \"email\": \"buyer1@test.com\", \"password\": \"Buyer123\", \"role\": \"buyer\"}"
+            }
+          }
+        },
+        {
+          "name": "Register Buyer B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"first_name\": \"Buyer\", \"last_name\": \"Two\", \"email\": \"buyer2@test.com\", \"password\": \"Buyer123\", \"role\": \"buyer\"}"
+            }
+          }
+        },
+        {
+          "name": "Login Seller A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"seller1@test.com\", \"password\": \"Seller123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login succeeded',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "const j=pm.response.json(); if(j.token) pm.collectionVariables.set('sellerToken',j.token);",
+                  "if(j.user?._id) pm.collectionVariables.set('sellerId',j.user._id); else if(j.user?.id) pm.collectionVariables.set('sellerId',j.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Seller B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"seller2@test.com\", \"password\": \"Seller123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login succeeded',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "const j=pm.response.json(); if(j.token) pm.collectionVariables.set('seller2Token',j.token);",
+                  "if(j.user?._id) pm.collectionVariables.set('seller2Id',j.user._id); else if(j.user?.id) pm.collectionVariables.set('seller2Id',j.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Buyer A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"buyer1@test.com\", \"password\": \"Buyer123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login succeeded',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "const j=pm.response.json(); if(j.token) pm.collectionVariables.set('buyerToken',j.token);",
+                  "if(j.user?._id) pm.collectionVariables.set('buyerId',j.user._id); else if(j.user?.id) pm.collectionVariables.set('buyerId',j.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Buyer B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"buyer2@test.com\", \"password\": \"Buyer123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login succeeded',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "const j=pm.response.json(); if(j.token) pm.collectionVariables.set('buyer2Token',j.token);",
+                  "if(j.user?._id) pm.collectionVariables.set('buyer2Id',j.user._id); else if(j.user?.id) pm.collectionVariables.set('buyer2Id',j.user.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Seller & Item Setup",
+      "item": [
+        {
+          "name": "Create Item - Seller A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "items"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"BidSwift Test Laptop\", \"description\": \"Test auction item\", \"category\": \"Electronics\", \"start_price\": 1000, \"images\": []}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request returned success', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "const j = pm.response.json();",
+                  "if (j.item?._id) pm.collectionVariables.set('itemId', j.item._id);",
+                  "else if (j._id) pm.collectionVariables.set('itemId', j._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Item",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "items",
+                "{{itemId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Seller B Cannot Modify Seller A Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "items",
+                "{{itemId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Unauthorized Change\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Ownership protection works',()=>pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Auction Setup",
+      "item": [
+        {
+          "name": "Create Auction - Increment 100",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auctions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auctions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"item_ID\": \"{{itemId}}\", \"start_time\": \"2020-01-01T00:00:00.000Z\", \"end_time\": \"2099-01-01T00:00:00.000Z\", \"bid_increment\": 100}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request returned success', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "const j = pm.response.json();",
+                  "if (j.auction?._id) pm.collectionVariables.set('auctionId', j.auction._id);",
+                  "else if (j._id) pm.collectionVariables.set('auctionId', j._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Auction",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auctions/{{auctionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auctions",
+                "{{auctionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate Auction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auctions/{{auctionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auctions",
+                "{{auctionId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\": \"active\"}"
+            }
+          }
+        },
+        {
+          "name": "Seller B Cannot Modify Auction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auctions/{{auctionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auctions",
+                "{{auctionId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"bid_increment\": 200}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Auction ownership protection works',()=>pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Wallet Funding",
+      "item": [
+        {
+          "name": "Deposit 5000 - Buyer A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/deposit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "deposit"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"amount\": 5000}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request returned success', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "const j = pm.response.json();",
+                  "if (j.wallet?._id) pm.collectionVariables.set('walletId', j.wallet._id);",
+                  "else if (j._id) pm.collectionVariables.set('walletId', j._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deposit 5000 - Buyer B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/deposit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "deposit"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"amount\": 5000}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request returned success', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "const j = pm.response.json();",
+                  "if (j.wallet2?._id) pm.collectionVariables.set('wallet2Id', j.wallet2._id);",
+                  "else if (j._id) pm.collectionVariables.set('wallet2Id', j._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Buyer A Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Buyer B Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Bid Flow - Success Cases",
+      "item": [
+        {
+          "name": "Bid 1 - Buyer A 1000",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": 1000}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request returned success', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "const j = pm.response.json();",
+                  "if (j.bid1?._id) pm.collectionVariables.set('bid1Id', j.bid1._id);",
+                  "else if (j._id) pm.collectionVariables.set('bid1Id', j._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check Buyer A Wallet - Frozen 1000",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bid 2 - Buyer B 1100",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": 1100}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request returned success', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "const j = pm.response.json();",
+                  "if (j.bid2?._id) pm.collectionVariables.set('bid2Id', j.bid2._id);",
+                  "else if (j._id) pm.collectionVariables.set('bid2Id', j._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check Buyer A Wallet - Unfrozen",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Buyer B Wallet - Frozen 1100",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bid 3 - Buyer B 1300",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": 1300}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request returned success', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "const j = pm.response.json();",
+                  "if (j.bid3?._id) pm.collectionVariables.set('bid3Id', j.bid3._id);",
+                  "else if (j._id) pm.collectionVariables.set('bid3Id', j._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check Buyer B Wallet - Frozen 1300",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Bids",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Final Auction State",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auctions/{{auctionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auctions",
+                "{{auctionId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Bid Flow - Validation & Security",
+      "item": [
+        {
+          "name": "Seller Cannot Bid On Own Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": 1400}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Seller blocked',()=>pm.expect(pm.response.code).to.equal(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bid Below Minimum Increment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": 1400}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Minimum increment enforced',()=>pm.expect(pm.response.code).to.equal(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Insufficient Available Balance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": 5100}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Insufficient balance blocked',()=>pm.expect(pm.response.code).to.equal(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid Amount String",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": \"1500\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('String amount rejected',()=>pm.expect(pm.response.code).to.equal(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing Auction ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"amount\": 1500}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing auction ID rejected',()=>pm.expect(pm.response.code).to.equal(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unauthenticated Bid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"auction_ID\": \"{{auctionId}}\", \"amount\": 1500}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Unauthenticated request rejected',()=>pm.expect(pm.response.code).to.be.oneOf([401,403]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 - Final Verification",
+      "item": [
+        {
+          "name": "Final Auction",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auctions/{{auctionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auctions",
+                "{{auctionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Final Buyer A Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Final Buyer B Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Final All Bids",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
