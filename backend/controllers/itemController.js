@@ -131,7 +131,7 @@ const deleteItem = async (req, res) => {
             });
         }
 
-        await item.remove();
+        await item.deleteOne();
 
         res.status(200).json({
             message: "Item deleted successfully"

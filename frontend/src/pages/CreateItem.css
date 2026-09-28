@@ -1,0 +1,309 @@
+/* ============================================================
+   CREATE ITEM PAGE
+   ============================================================ */
+
+.create-item-page {
+  min-height: 100vh;
+
+  background-color: #f1f5f9;
+}
+
+.create-item-container {
+  width: 100%;
+  max-width: 900px;
+
+  margin: 0 auto;
+
+  padding: 40px 24px 60px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.create-item-header {
+  margin-bottom: 30px;
+}
+
+.create-item-label {
+  margin: 0 0 8px;
+
+  color: #2563eb;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.create-item-header h1 {
+  margin: 0 0 10px;
+
+  color: #0f172a;
+
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.create-item-header p:last-child {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 15px;
+}
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.create-item-card {
+  padding: 30px;
+
+  background-color: white;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 14px;
+
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.07);
+}
+
+/* ============================================================
+   ERROR / SUCCESS
+   ============================================================ */
+
+.create-item-error {
+  margin-bottom: 20px;
+
+  padding: 14px 16px;
+
+  background-color: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 8px;
+
+  color: #b91c1c;
+
+  font-size: 14px;
+}
+
+.create-item-success {
+  margin-bottom: 20px;
+
+  padding: 14px 16px;
+
+  background-color: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+
+  border-radius: 8px;
+
+  color: #15803d;
+
+  font-size: 14px;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.create-item-form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 22px;
+}
+
+.create-item-field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.create-item-field label {
+  color: #0f172a;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.create-item-field input,
+.create-item-field textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+
+  background-color: white;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 8px;
+
+  color: #0f172a;
+
+  font-family: inherit;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.create-item-field input {
+  height: 46px;
+}
+
+.create-item-field textarea {
+  resize: vertical;
+
+  min-height: 120px;
+}
+
+.create-item-field input:focus,
+.create-item-field textarea:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.create-item-field input:disabled,
+.create-item-field textarea:disabled {
+  background-color: #f8fafc;
+
+  cursor: not-allowed;
+}
+
+.create-item-field input::placeholder,
+.create-item-field textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* ============================================================
+   HINT
+   ============================================================ */
+
+.create-item-hint {
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.create-item-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 8px;
+
+  padding-top: 24px;
+
+  border-top: 1px solid #eef2f7;
+}
+
+.create-item-cancel,
+.create-item-submit {
+  padding: 12px 20px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.create-item-cancel {
+  background-color: white;
+
+  border: 1px solid #cbd5e1;
+
+  color: #475569;
+}
+
+.create-item-cancel:hover {
+  background-color: #f8fafc;
+
+  border-color: #94a3b8;
+
+  transform: translateY(-2px);
+}
+
+.create-item-submit {
+  background-color: #2563eb;
+
+  border: 1px solid #2563eb;
+
+  color: white;
+}
+
+.create-item-submit:hover {
+  background-color: #1d4ed8;
+
+  transform: translateY(-2px);
+
+  box-shadow: 0 5px 12px rgba(37, 99, 235, 0.2);
+}
+
+.create-item-cancel:disabled,
+.create-item-submit:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 600px) {
+  .create-item-container {
+    padding: 30px 16px 50px;
+  }
+
+  .create-item-header h1 {
+    font-size: 28px;
+  }
+
+  .create-item-card {
+    padding: 22px;
+  }
+
+  .create-item-actions {
+    flex-direction: column-reverse;
+  }
+
+  .create-item-cancel,
+  .create-item-submit {
+    width: 100%;
+  }
+}
