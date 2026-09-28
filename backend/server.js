@@ -4,6 +4,8 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
+import { createServer } from "http";
+import { initializeSocket } from "./config/socket.js";
 import connectDB from "./config/db.js";
 import redisClient from "./config/redis.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
@@ -22,6 +24,11 @@ import orderRoutes from "./routes/orderRoutes.js";
 const app = express();
 app.use(express.json());
 
+const httpServer = createServer(app);
+const io = initializeSocket(
+    httpServer
+);
+
 app.use(
     cors({
         origin: "http://localhost:5173"
@@ -34,6 +41,52 @@ await redisClient.connect();
 console.log("Redis connected successfully");
 
 connectDB();
+
+io.on("connection", (socket) => {
+    console.log(
+        "Socket connected:",
+        socket.id
+    );
+
+    socket.on(
+        "joinAuction",
+        (auctionId) => {
+
+            const roomName =
+                `auction:${auctionId}`;
+
+            socket.join(roomName);
+
+            console.log(
+                `Socket ${socket.id} joined ${roomName}`
+            );
+
+        }
+    );
+
+    socket.on(
+        "leaveAuction",
+        (auctionId) => {
+
+            const roomName =
+                `auction:${auctionId}`;
+
+            socket.leave(roomName);
+
+            console.log(
+                `Socket ${socket.id} left ${roomName}`
+            );
+
+        }
+    );
+
+    socket.on("disconnect", () => {
+        console.log(
+            "Socket disconnected:",
+            socket.id
+        );
+    });
+});
 
 app.get("/", (req, res) => {
     res.send("BidSwift Backend is Running");
@@ -61,6 +114,11 @@ app.use("/api/wallets", walletRoutes);
 
 app.use("/api/orders", orderRoutes);
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+httpServer.listen(
+    PORT,
+    () => {
+        console.log(
+            `Server running on port ${PORT}`
+        );
+    }
+);

@@ -1,6 +1,7 @@
 import Auction from "../models/Auction.js";
 import Item from "../models/Item.js";
 import redisClient from "../config/redis.js";
+import { emitAuctionStatusUpdate } from "../utils/socketEvents.js";
 
 const getAllAuctions = async (req, res) => {
     try {
@@ -437,6 +438,27 @@ const completeAuction = async (req, res) => {
                 completedAuction = auction;
             },
             3
+        );
+
+        try {
+
+            await redisClient.del(
+                `auction:${auctionId}`
+            );
+
+        }
+        catch (redisError) {
+
+            console.error(
+                "Failed to invalidate auction cache:",
+                redisError.message
+            );
+
+        }
+
+        emitAuctionStatusUpdate(
+            auctionId,
+            "completed"
         );
 
         return res.status(200).json({

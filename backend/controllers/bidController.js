@@ -4,6 +4,7 @@ import Auction from "../models/Auction.js";
 import Wallet from "../models/Wallet.js";
 import redisClient from "../config/redis.js";
 import runTransactionWithRetry from "../utils/transactionRetry.js";
+import { emitBidUpdated } from "../utils/socketEvents.js";
 
 const getAllBids = async (req, res) => {
     try {
@@ -238,6 +239,20 @@ const createBid = async (req, res) => {
                 redisError.message
             );
         }
+
+        const latestBid = await Bid.findById(
+            createdBid._id
+        )
+            .populate(
+                "bidder_ID",
+                "first_name last_name"
+            );
+
+        emitBidUpdated(
+            auction_ID,
+            latestBid,
+            amount
+        );
 
         res.status(201).json({
             message: "Bid placed successfully",
