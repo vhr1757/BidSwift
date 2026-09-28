@@ -1,0 +1,152 @@
+.register-page {
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 24px;
+}
+
+.register-card {
+    width: 100%;
+    max-width: 480px;
+
+    background-color: white;
+
+    padding: 40px;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.register-logo {
+    margin: 0 0 8px;
+
+    text-align: center;
+
+    font-size: 32px;
+
+    color: #1d4ed8;
+}
+
+.register-title {
+    margin: 0 0 30px;
+
+    text-align: center;
+
+    font-size: 24px;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+.register-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.register-field label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.register-field input,
+.register-field select {
+    width: 100%;
+
+    padding: 12px 14px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    outline: none;
+
+    background-color: white;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.register-field input:focus,
+.register-field select:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.register-button {
+    width: 100%;
+
+    padding: 12px;
+
+    margin-top: 6px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #2563eb;
+    color: white;
+
+    font-weight: 600;
+}
+
+.register-button:hover {
+    background-color: #1d4ed8;
+}
+
+.register-message {
+    margin-top: 20px;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    background-color: #ecfdf5;
+    color: #047857;
+
+    font-size: 14px;
+}
+
+.register-error {
+    margin-top: 20px;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    background-color: #fef2f2;
+    color: #b91c1c;
+
+    font-size: 14px;
+}
+
+.register-login {
+    margin-top: 24px;
+
+    text-align: center;
+
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+.register-login a {
+    color: #2563eb;
+
+    font-weight: 600;
+}
+
+.register-login a:hover {
+    text-decoration: underline;
+}

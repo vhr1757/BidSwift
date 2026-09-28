@@ -1,6 +1,7 @@
 import { useState } from "react";
-
 import { registerUser } from "../services/api.js";
+
+import "./Register.css";
 
 function Register() {
     const [firstName, setFirstName] = useState("");
@@ -44,135 +45,144 @@ function Register() {
     };
 
     return (
-        <div>
-            <h1>BidSwift</h1>
+        <div className="register-page">
 
-            <h2>Create Account</h2>
+    <div className="register-card">
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="firstName">
-                        First Name
-                    </label>
+        <h1 className="register-logo">
+            BidSwift
+        </h1>
 
-                    <br />
+        <h2 className="register-title">
+            Create Account
+        </h2>
 
-                    <input
-                        type="text"
-                        id="firstName"
-                        value={firstName}
-                        onChange={(event) =>
-                            setFirstName(event.target.value)
-                        }
-                        placeholder="Enter your first name"
-                        required
-                    />
-                </div>
+        <form
+            className="register-form"
+            onSubmit={handleSubmit}
+        >
 
-                <br />
+            <div className="register-field">
+                <label htmlFor="firstName">
+                    First Name
+                </label>
 
-                <div>
-                    <label htmlFor="lastName">
-                        Last Name
-                    </label>
+                <input
+                    type="text"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(event) =>
+                        setFirstName(event.target.value)
+                    }
+                    placeholder="Enter your first name"
+                    required
+                />
+            </div>
 
-                    <br />
 
-                    <input
-                        type="text"
-                        id="lastName"
-                        value={lastName}
-                        onChange={(event) =>
-                            setLastName(event.target.value)
-                        }
-                        placeholder="Enter your last name"
-                        required
-                    />
-                </div>
+            <div className="register-field">
+                <label htmlFor="lastName">
+                    Last Name
+                </label>
 
-                <br />
+                <input
+                    type="text"
+                    id="lastName"
+                    value={lastName}
+                    onChange={(event) =>
+                        setLastName(event.target.value)
+                    }
+                    placeholder="Enter your last name"
+                    required
+                />
+            </div>
 
-                <div>
-                    <label htmlFor="email">
-                        Email
-                    </label>
 
-                    <br />
+            <div className="register-field">
+                <label htmlFor="email">
+                    Email
+                </label>
 
-                    <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(event) =>
-                            setEmail(event.target.value)
-                        }
-                        placeholder="Enter your email"
-                        required
-                    />
-                </div>
+                <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(event) =>
+                        setEmail(event.target.value)
+                    }
+                    placeholder="Enter your email"
+                    required
+                />
+            </div>
 
-                <br />
 
-                <div>
-                    <label htmlFor="password">
-                        Password
-                    </label>
+            <div className="register-field">
+                <label htmlFor="password">
+                    Password
+                </label>
 
-                    <br />
+                <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(event) =>
+                        setPassword(event.target.value)
+                    }
+                    placeholder="Enter your password"
+                    required
+                />
+            </div>
 
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(event) =>
-                            setPassword(event.target.value)
-                        }
-                        placeholder="Enter your password"
-                        required
-                    />
-                </div>
 
-                <br />
+            <div className="register-field">
+                <label htmlFor="role">
+                    Account Type
+                </label>
 
-                <div>
-                    <label htmlFor="role">
-                        Account Type
-                    </label>
+                <select
+                    id="role"
+                    value={role}
+                    onChange={(event) =>
+                        setRole(event.target.value)
+                    }
+                >
+                    <option value="buyer">
+                        Buyer
+                    </option>
 
-                    <br />
+                    <option value="seller">
+                        Seller
+                    </option>
+                </select>
+            </div>
 
-                    <select
-                        id="role"
-                        value={role}
-                        onChange={(event) =>
-                            setRole(event.target.value)
-                        }
-                    >
-                        <option value="buyer">
-                            Buyer
-                        </option>
 
-                        <option value="seller">
-                            Seller
-                        </option>
-                    </select>
-                </div>
+            <button
+                className="register-button"
+                type="submit"
+            >
+                Register
+            </button>
 
-                <br />
+        </form>
 
-                <button type="submit">
-                    Register
-                </button>
-            </form>
 
-            {message && (
-                <p>{message}</p>
-            )}
+        {message && (
+            <p className="register-message">
+                {message}
+            </p>
+        )}
 
-            {error && (
-                <p>{error}</p>
-            )}
-        </div>
+
+        {error && (
+            <p className="register-error">
+                {error}
+            </p>
+        )}
+
+    </div>
+
+</div>
     );
 }
 

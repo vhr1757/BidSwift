@@ -1,0 +1,308 @@
+.auction-details-page {
+    min-height: 100vh;
+
+    padding: 40px 24px;
+}
+
+.auction-details-container {
+    width: 100%;
+    max-width: 900px;
+
+    margin: 0 auto;
+}
+
+.auction-details-title {
+    margin: 8px 0 28px;
+
+    font-size: 28px;
+}
+
+.auction-details-card {
+    background-color: white;
+
+    padding: 28px;
+
+    border-radius: 14px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.auction-item-name {
+    margin: 0 0 24px;
+
+    font-size: 24px;
+}
+
+.auction-detail-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #eef2f7;
+}
+
+.auction-detail-label {
+    color: #64748b;
+}
+
+.auction-detail-value {
+    font-weight: 600;
+
+    text-align: right;
+}
+
+.auction-current-bid {
+    color: #1d4ed8;
+
+    font-size: 20px;
+}
+
+.auction-minimum-bid {
+    color: #15803d;
+
+    font-size: 18px;
+}
+
+.auction-status {
+    display: inline-block;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background-color: #dcfce7;
+    color: #15803d;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    text-transform: capitalize;
+}
+
+
+/* ============================================================
+   PLACE BID
+============================================================ */
+
+.bid-section {
+    margin-top: 28px;
+
+    padding: 24px;
+
+    border-radius: 12px;
+
+    background-color: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+}
+
+.bid-section-title {
+    margin: 0 0 20px;
+
+    font-size: 20px;
+}
+
+.bid-form {
+    display: flex;
+
+    gap: 12px;
+
+    align-items: end;
+}
+
+.bid-field {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.bid-field label {
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+.bid-field input {
+    width: 100%;
+
+    padding: 12px 14px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 8px;
+
+    outline: none;
+}
+
+.bid-field input:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.bid-button {
+    padding: 12px 22px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background-color: #2563eb;
+
+    color: white;
+
+    font-weight: 600;
+}
+
+.bid-button:hover {
+    background-color: #1d4ed8;
+}
+
+.bid-button:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.6;
+}
+
+.bid-success {
+    margin-top: 16px;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    background-color: #ecfdf5;
+
+    color: #047857;
+}
+
+.bid-error {
+    margin-top: 16px;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    background-color: #fef2f2;
+
+    color: #b91c1c;
+}
+
+
+/* ============================================================
+   BID HISTORY
+============================================================ */
+
+.bid-history {
+    margin-top: 28px;
+}
+
+.bid-history-title {
+    margin-bottom: 18px;
+
+    font-size: 20px;
+}
+
+.bid-history-empty {
+    padding: 20px;
+
+    background-color: #f8fafc;
+
+    border-radius: 10px;
+
+    color: #64748b;
+
+    text-align: center;
+}
+
+.bid-history-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.bid-history-item {
+    padding: 18px;
+
+    background-color: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.03);
+}
+
+.bid-history-amount {
+    margin: 0 0 8px;
+
+    color: #1d4ed8;
+
+    font-size: 18px;
+
+    font-weight: 700;
+}
+
+.bid-history-bidder,
+.bid-history-time {
+    margin: 5px 0;
+
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+.bid-history-bidder strong,
+.bid-history-time strong {
+    color: #334155;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 600px) {
+
+    .auction-details-page {
+        padding: 24px 16px;
+    }
+
+    .auction-details-card {
+        padding: 20px;
+    }
+
+    .bid-form {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .bid-button {
+        width: 100%;
+    }
+
+    .auction-detail-row {
+        flex-direction: column;
+
+        gap: 6px;
+    }
+
+    .auction-detail-value {
+        text-align: left;
+    }
+}
