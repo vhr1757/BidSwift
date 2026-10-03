@@ -146,7 +146,6 @@ function Profile() {
 
       <main className="profile-page">
         <div className="profile-container">
-
           <section className="profile-hero card">
             <div className="profile-avatar">{initials || "U"}</div>
 
@@ -157,6 +156,20 @@ function Profile() {
 
               <span className="profile-role">{role}</span>
             </div>
+
+            <button
+              className="edit-profile-button"
+              onClick={() => navigate("/profile/edit")}
+            >
+              Edit Profile
+            </button>
+
+            <button
+              className="change-password-button"
+              onClick={() => navigate("/profile/password")}
+            >
+              Change Password
+            </button>
           </section>
 
           <section className="profile-section">
