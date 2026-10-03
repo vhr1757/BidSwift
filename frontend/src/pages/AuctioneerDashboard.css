@@ -1,0 +1,344 @@
+/* ============================================================
+   AUCTIONEER DASHBOARD
+   ============================================================ */
+
+.auctioneer-dashboard {
+  min-height: 100vh;
+
+  background-color: #f1f5f9;
+}
+
+.auctioneer-dashboard-content {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  padding: 40px 24px 60px;
+}
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+
+.auctioneer-welcome {
+  margin-bottom: 30px;
+}
+
+.auctioneer-dashboard-label {
+  margin: 0 0 8px;
+
+  color: #2563eb;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.auctioneer-welcome h1 {
+  margin: 0 0 10px;
+
+  color: #0f172a;
+
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.auctioneer-welcome p:last-child {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 15px;
+}
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.auctioneer-dashboard-error {
+  margin-bottom: 24px;
+
+  padding: 14px 16px;
+
+  background-color: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 8px;
+
+  color: #b91c1c;
+
+  font-size: 14px;
+}
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.auctioneer-stat-grid {
+  display: grid;
+
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+
+  gap: 20px;
+
+  margin-bottom: 30px;
+}
+
+.auctioneer-stat-card {
+  position: relative;
+
+  padding: 24px;
+
+  background-color: white;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 14px;
+
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.07);
+
+  overflow: hidden;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.auctioneer-stat-card::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 4px;
+  height: 100%;
+
+  background-color: #2563eb;
+
+  opacity: 0;
+
+  transition: opacity 0.2s ease;
+}
+
+.auctioneer-stat-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.11);
+
+  border-color: #dbeafe;
+}
+
+.auctioneer-stat-card:hover::before {
+  opacity: 1;
+}
+
+.auctioneer-stat-label {
+  display: block;
+
+  margin-bottom: 10px;
+
+  color: #64748b;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.auctioneer-stat-card strong {
+  color: #0f172a;
+
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   MAIN DASHBOARD GRID
+   ============================================================ */
+
+.auctioneer-dashboard-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 24px;
+}
+
+/* ============================================================
+   DASHBOARD CARDS
+   ============================================================ */
+
+.auctioneer-dashboard-card {
+  padding: 24px;
+
+  background-color: white;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 14px;
+
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.07);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.auctioneer-dashboard-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.11);
+}
+
+.auctioneer-dashboard-card h2 {
+  margin: 0 0 20px;
+
+  color: #0f172a;
+
+  font-size: 21px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   QUICK ACTIONS
+   ============================================================ */
+
+.auctioneer-action-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.auctioneer-action-button {
+  display: block;
+
+  padding: 13px 16px;
+
+  background-color: #2563eb;
+
+  border: 1px solid #2563eb;
+
+  border-radius: 8px;
+
+  color: white;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  text-align: center;
+  text-decoration: none;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.auctioneer-action-button:hover {
+  background-color: #1d4ed8;
+
+  transform: translateY(-2px);
+
+  box-shadow: 0 5px 12px rgba(37, 99, 235, 0.2);
+}
+
+.auctioneer-action-button.secondary {
+  background-color: white;
+
+  border-color: #d1d5db;
+
+  color: #0f172a;
+}
+
+.auctioneer-action-button.secondary:hover {
+  background-color: #f8fafc;
+
+  border-color: #2563eb;
+
+  color: #2563eb;
+}
+
+/* ============================================================
+   INFORMATION
+   ============================================================ */
+
+.auctioneer-information {
+  display: flex;
+
+  flex-direction: column;
+}
+
+.auctioneer-information div {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 20px;
+
+  min-height: 48px;
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid #eef2f7;
+}
+
+.auctioneer-information div:last-child {
+  border-bottom: none;
+}
+
+.auctioneer-information span {
+  color: #64748b;
+
+  font-size: 15px;
+}
+
+.auctioneer-information strong {
+  color: #0f172a;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  text-align: right;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+  .auctioneer-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .auctioneer-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .auctioneer-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .auctioneer-dashboard-content {
+    padding: 30px 16px 50px;
+  }
+
+  .auctioneer-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auctioneer-welcome h1 {
+    font-size: 26px;
+  }
+}

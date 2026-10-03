@@ -12,6 +12,10 @@ import SellerItems from "./pages/SellerItems.jsx";
 import CreateItem from "./pages/CreateItem.jsx";
 import EditItem from "./pages/EditItem.jsx";
 import SellerOrders from "./pages/SellerOrders.jsx";
+import AuctioneerDashboard from "./pages/AuctioneerDashboard.jsx";
+import AuctioneerAuctions from "./pages/AuctioneerAuctions.jsx";
+import CreateAuction from "./pages/CreateAuction.jsx";
+import EditAuction from "./pages/EditAuction.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import RoleProtectedRoute from "./components/RoleProtectedRoute.jsx";
@@ -128,7 +132,34 @@ function App() {
           path="/auctioneer"
           element={
             <RoleProtectedRoute allowedRoles={["auctioneer"]}>
-              <AuctioneerPlaceholder />
+              <AuctioneerDashboard />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/auctioneer/auctions"
+          element={
+            <RoleProtectedRoute allowedRoles={["auctioneer"]}>
+              <AuctioneerAuctions />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/auctioneer/auctions/create"
+          element={
+            <RoleProtectedRoute allowedRoles={["auctioneer"]}>
+              <CreateAuction />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/auctioneer/auctions/:id/edit"
+          element={
+            <RoleProtectedRoute allowedRoles={["auctioneer"]}>
+              <EditAuction />
             </RoleProtectedRoute>
           }
         />

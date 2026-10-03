@@ -31,7 +31,17 @@ function Login() {
 
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      navigate("/auctions");
+      if (data.user.role === "buyer") {
+        navigate("/auctions");
+      } else if (data.user.role === "seller") {
+        navigate("/seller");
+      } else if (data.user.role === "auctioneer") {
+        navigate("/auctioneer");
+      } else if (data.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        setError("Unknown user role");
+      }
     } catch (error) {
       console.error("Login error:", error);
 

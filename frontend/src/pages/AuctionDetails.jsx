@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
+
 import { useParams } from "react-router-dom";
 
 import { apiRequest } from "../services/api.js";
+
 import "./AuctionDetails.css";
+
 import Navbar from "../components/Navbar";
+
 import AuctionTimer from "../components/AuctionTimer";
+
 import socket from "../services/socket.js";
 
 function AuctionDetails() {
   // Get auction ID from URL
+
   const { id } = useParams();
 
   const [auction, setAuction] = useState(null);
@@ -29,9 +35,26 @@ function AuctionDetails() {
 
   const [bidsLoading, setBidsLoading] = useState(true);
 
+  const [walletBalance, setWalletBalance] = useState(null);
+
+  const [walletLoading, setWalletLoading] = useState(false);
+
+  const storedUser = localStorage.getItem("user");
+
+  let currentUser = null;
+
+  if (storedUser) {
+    try {
+      currentUser = JSON.parse(storedUser);
+    } catch (error) {
+      console.error("Failed to parse stored user:", error);
+    }
+  }
+
   const fetchAuction = async () => {
     try {
       setLoading(true);
+
       setError("");
 
       const data = await apiRequest(`/auctions/${id}`);
@@ -57,6 +80,7 @@ function AuctionDetails() {
       console.log("All bids received:", data);
 
       // Keep only bids belonging to this auction
+
       const auctionBids = data
         .filter((bid) => String(bid.auction_ID?._id) === String(id))
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -71,8 +95,31 @@ function AuctionDetails() {
 
   useEffect(() => {
     fetchAuction();
+
     fetchBids();
   }, [id]);
+
+  useEffect(() => {
+    if (currentUser?.role !== "buyer") {
+      return;
+    }
+
+    const fetchWallet = async () => {
+      try {
+        setWalletLoading(true);
+
+        const wallet = await apiRequest("/wallets/me");
+
+        setWalletBalance(wallet.balance);
+      } catch (error) {
+        console.error("Failed to fetch wallet:", error);
+      } finally {
+        setWalletLoading(false);
+      }
+    };
+
+    fetchWallet();
+  }, [currentUser?.role]);
 
   useEffect(() => {
     if (!id) {
@@ -93,12 +140,14 @@ function AuctionDetails() {
 
     // If socket is already connected,
     // join immediately.
+
     if (socket.connected) {
       joinAuctionRoom();
     }
 
     // If connection happens later,
     // join after connection.
+
     socket.on("connect", joinAuctionRoom);
 
     return () => {
@@ -112,7 +161,9 @@ function AuctionDetails() {
     const handleBidUpdated = (data) => {
       console.log("Real-time bid update received:", data);
 
-      // Ignore updates belonging to another auction.
+      // Ignore updates belonging
+      // to another auction.
+
       if (String(data.auctionId) !== String(id)) {
         return;
       }
@@ -134,6 +185,7 @@ function AuctionDetails() {
       if (data.bid) {
         setBids((previousBids) => {
           // Prevent duplicate bid entries.
+
           const alreadyExists = previousBids.some(
             (bid) => String(bid._id) === String(data.bid._id),
           );
@@ -159,6 +211,7 @@ function AuctionDetails() {
       console.log("Auction status update received:", data);
 
       // Ignore other auctions.
+
       if (String(data.auctionId) !== String(id)) {
         return;
       }
@@ -187,12 +240,25 @@ function AuctionDetails() {
     event.preventDefault();
 
     setBidMessage("");
+
     setBidError("");
 
     const amount = Number(bidAmount);
 
     if (!Number.isFinite(amount) || amount <= 0) {
       setBidError("Please enter a valid bid amount");
+
+      return;
+    }
+
+    if (currentUser?.role !== "buyer") {
+      setBidError("Only buyers can place bids");
+
+      return;
+    }
+
+    if (auction?.status !== "active") {
+      setBidError("This auction is no longer active");
 
       return;
     }
@@ -205,6 +271,7 @@ function AuctionDetails() {
 
         body: JSON.stringify({
           auction_ID: id,
+
           amount: amount,
         }),
       });
@@ -227,6 +294,7 @@ function AuctionDetails() {
     return (
       <>
         <Navbar />
+
         <div>
           <h1>BidSwift</h1>
 
@@ -242,6 +310,7 @@ function AuctionDetails() {
     return (
       <>
         <Navbar />
+
         <div>
           <h1>BidSwift</h1>
 
@@ -276,16 +345,19 @@ function AuctionDetails() {
   return (
     <>
       <Navbar />
+
       <div className="auction-details-page">
         <div className="auction-details-container">
           <h2 className="auction-details-title">Auction Details</h2>
 
           <div className="auction-details-card">
             <AuctionTimer
+              auctionId={id}
               status={auction.status}
               startTime={auction.start_time}
               endTime={auction.end_time}
             />
+
             <h3 className="auction-item-name">
               {auction.item_ID?.name || "Auction Item"}
             </h3>
@@ -322,6 +394,22 @@ function AuctionDetails() {
               </span>
             </div>
 
+            {currentUser?.role === "buyer" && (
+              <div className="auction-detail-row">
+                <span className="auction-detail-label">
+                  Your Current Balance
+                </span>
+
+                <span className="auction-detail-value auction-wallet-balance">
+                  {walletLoading
+                    ? "Loading..."
+                    : walletBalance !== null
+                      ? walletBalance
+                      : "Unavailable"}
+                </span>
+              </div>
+            )}
+
             <div className="auction-detail-row">
               <span className="auction-detail-label">Status</span>
 
@@ -329,7 +417,7 @@ function AuctionDetails() {
             </div>
 
             <div className="bid-section">
-              {auction.status === "active" ? (
+              {auction.status === "active" && currentUser?.role === "buyer" ? (
                 <>
                   <h3 className="bid-section-title">Place Your Bid</h3>
 

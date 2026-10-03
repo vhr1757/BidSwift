@@ -8,6 +8,7 @@ import {
     createAuction,
     updateAuction,
     deleteAuction,
+    activateAuction,
     completeAuction
 } from "../controllers/auctionController.js";
 
@@ -39,9 +40,18 @@ router.delete(
 );
 
 router.post(
+    "/:id/activate",
+    authMiddleware,
+    authorizeRoles(
+        "auctioneer",
+        "admin"
+    ),
+    activateAuction
+);
+
+router.post(
     "/:id/complete",
     authMiddleware,
-    authorizeRoles("auctioneer", "admin"),
     completeAuction
 );
 
