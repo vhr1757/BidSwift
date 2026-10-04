@@ -17,12 +17,26 @@ function Navbar() {
 
   const role = user?.role;
 
+  const handleAuctionsNavigation = () => {
+    if (role === "admin") {
+      navigate("/admin/auctions");
+    } else if (role === "auctioneer") {
+      navigate("/auctioneer/auctions");
+    } else {
+      navigate("/auctions");
+    }
+  };
+
   return (
     <nav className="navbar">
+      {/* Logo */}
+
       <div
         className="navbar-logo"
         onClick={() => {
-          if (role === "buyer") {
+          if (!user) {
+            navigate("/");
+          } else if (role === "buyer") {
             navigate("/auctions");
           } else if (role === "seller") {
             navigate("/seller");
@@ -36,11 +50,23 @@ function Navbar() {
         BidSwift
       </div>
 
+      {/* Navigation Links */}
+
       <div className="navbar-links">
+        {/* Common public links */}
+
+        <button onClick={() => navigate("/")}>Home</button>
+
+        <button onClick={handleAuctionsNavigation}>Auctions</button>
+
+        <button onClick={() => navigate("/about")}>About</button>
+
+        <button onClick={() => navigate("/contact")}>Contact</button>
+
+        {/* Buyer */}
+
         {role === "buyer" && (
           <>
-            <button onClick={() => navigate("/auctions")}>Auctions</button>
-
             <button onClick={() => navigate("/my-bids")}>My Bids</button>
 
             <button onClick={() => navigate("/wallet")}>Wallet</button>
@@ -56,6 +82,8 @@ function Navbar() {
             <button onClick={() => navigate("/profile")}>Profile</button>
           </>
         )}
+
+        {/* Seller */}
 
         {role === "seller" && (
           <>
@@ -73,6 +101,8 @@ function Navbar() {
           </>
         )}
 
+        {/* Auctioneer */}
+
         {role === "auctioneer" && (
           <>
             <button onClick={() => navigate("/auctioneer")}>Dashboard</button>
@@ -89,15 +119,13 @@ function Navbar() {
           </>
         )}
 
+        {/* Admin */}
+
         {role === "admin" && (
           <>
             <button onClick={() => navigate("/admin")}>Dashboard</button>
 
             <button onClick={() => navigate("/admin/users")}>Users</button>
-
-            <button onClick={() => navigate("/admin/auctions")}>
-              Auctions
-            </button>
 
             <button onClick={() => navigate("/admin/items")}>Items</button>
 
@@ -110,12 +138,31 @@ function Navbar() {
         )}
       </div>
 
-      <div className="navbar-user">
-        {user && <span className="navbar-username">Hi, {user.first_name}</span>}
+      {/* User / Authentication */}
 
-        <button className="logout-button" onClick={handleLogout}>
-          Logout
-        </button>
+      <div className="navbar-user">
+        {user ? (
+          <>
+            <span className="navbar-username">Hi, {user.first_name}</span>
+
+            <button className="logout-button" onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="login-button" onClick={() => navigate("/login")}>
+              Login
+            </button>
+
+            <button
+              className="register-button"
+              onClick={() => navigate("/register")}
+            >
+              Register
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );

@@ -1,14 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiRequest } from "../services/api.js";
 
 import Navbar from "../components/Navbar";
+import SearchFilter from "../components/SearchFilter";
 
 import "./SellerItems.css";
 
 function SellerItems() {
   const [items, setItems] = useState([]);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -17,6 +22,8 @@ function SellerItems() {
   const [deleteLoading, setDeleteLoading] = useState(null);
 
   const [currentImages, setCurrentImages] = useState({});
+
+  const initialLoad = useRef(true);
 
   const storedUser = localStorage.getItem("user");
 
@@ -30,33 +37,89 @@ function SellerItems() {
     }
   }
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
+  const fetchItems = async (
+    searchValue = search,
+    categoryValue = category,
+    showLoading = true,
+  ) => {
+    try {
+      if (showLoading) {
         setLoading(true);
+      }
 
-        setError("");
+      setError("");
 
-        const data = await apiRequest("/items");
+      const params = new URLSearchParams();
 
-        const allItems = Array.isArray(data) ? data : data.items || [];
+      if (searchValue) {
+        params.append("search", searchValue);
+      }
 
-        const sellerItems = allItems.filter(
-          (item) => String(item.seller_ID) === String(user?.id),
-        );
+      if (categoryValue) {
+        params.append("category", categoryValue);
+      }
 
-        setItems(sellerItems);
-      } catch (error) {
-        console.error("Failed to fetch seller items:", error);
+      const queryString = params.toString();
 
-        setError(error.message || "Failed to load your items");
-      } finally {
+      const data = await apiRequest(
+        queryString ? `/items?${queryString}` : "/items",
+      );
+
+      const allItems = Array.isArray(data) ? data : data.items || [];
+
+      const sellerItems = allItems.filter((item) => {
+        const sellerId = item.seller_ID?._id || item.seller_ID;
+
+        return String(sellerId) === String(user?.id);
+      });
+
+      setItems(sellerItems);
+
+      if (!Array.isArray(data) && data.categories) {
+        setCategories(data.categories);
+      }
+    } catch (error) {
+      console.error("Failed to fetch seller items:", error);
+
+      setError(error.message || "Failed to load your items");
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    fetchItems();
-  }, [user?._id]);
+  useEffect(() => {
+    fetchItems("", "", true);
+    initialLoad.current = false;
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (initialLoad.current) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchItems(search, category, false);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [search, category]);
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setCategory(value);
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setCategory("");
+  };
 
   const showPreviousImage = (event, itemId, imageCount) => {
     event.preventDefault();
@@ -137,6 +200,15 @@ function SellerItems() {
           </Link>
         </div>
 
+        <SearchFilter
+          search={search}
+          category={category}
+          categories={categories}
+          onSearchChange={handleSearchChange}
+          onCategoryChange={handleCategoryChange}
+          onClear={handleClear}
+        />
+
         {error && <div className="seller-items-error">{error}</div>}
 
         {loading && (
@@ -147,13 +219,19 @@ function SellerItems() {
 
         {!loading && !error && items.length === 0 && (
           <div className="seller-items-empty">
-            <h2>No items yet</h2>
+            <h2>No items found</h2>
 
-            <p>You haven't added any items yet.</p>
+            <p>
+              {search || category
+                ? "No items match your search or selected category."
+                : "You haven't added any items yet."}
+            </p>
 
-            <Link to="/seller/items/create" className="seller-empty-button">
-              Add Your First Item
-            </Link>
+            {!search && !category && (
+              <Link to="/seller/items/create" className="seller-empty-button">
+                Add Your First Item
+              </Link>
+            )}
           </div>
         )}
 

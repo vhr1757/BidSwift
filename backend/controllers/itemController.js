@@ -4,10 +4,32 @@ import uploadToCloudinary from "../utils/cloudinaryUpload.js";
 
 const getAllItems = async (req, res) => {
   try {
-    const items = await Item.find();
-    res.status(200).json(items);
+    const { search, category } = req.query;
+
+    const itemFilter = {};
+
+    if (search) {
+      itemFilter.name = {
+        $regex: search,
+        $options: "i",
+      };
+    }
+
+    if (category) {
+      itemFilter.category = category;
+    }
+
+    const items = await Item.find(itemFilter);
+
+    const categories = await Item.distinct("category");
+
+    res.status(200).json({
+      items,
+      categories,
+    });
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       message: "Failed to fetch items",
     });

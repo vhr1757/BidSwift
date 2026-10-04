@@ -11,17 +11,64 @@ import {
 } from "../utils/socketEvents.js";
 
 const getAllAuctions = async (req, res) => {
-  try {
-    const auctions = await Auction.find().populate("item_ID");
+    try {
+        const {
+            search,
+            category
+        } = req.query;
 
-    res.status(200).json(auctions);
-  } catch (error) {
-    console.error(error);
+        const itemFilter = {};
 
-    res.status(500).json({
-      message: "Failed to fetch auctions",
-    });
-  }
+        if (search) {
+            itemFilter.name = {
+                $regex: search,
+                $options: "i"
+            };
+        }
+
+        if (category) {
+            itemFilter.category = category;
+        }
+
+        let auctionQuery = Auction.find();
+
+        if (
+            Object.keys(itemFilter).length > 0
+        ) {
+            const matchingItems =
+                await Item.find(itemFilter)
+                    .select("_id");
+
+            const itemIds =
+                matchingItems.map(
+                    (item) => item._id
+                );
+
+            auctionQuery =
+                auctionQuery
+                    .where("item_ID")
+                    .in(itemIds);
+        }
+
+        const auctions =
+            await auctionQuery
+                .populate("item_ID");
+
+        const categories =
+            await Item.distinct("category");
+
+        res.status(200).json({
+            auctions,
+            categories
+        });
+    }
+    catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Failed to fetch auctions",
+        });
+    }
 };
 
 const getAuctionByID = async (req, res) => {

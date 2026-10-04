@@ -1,20 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiRequest } from "../services/api.js";
 
 import Navbar from "../components/Navbar";
+import AuctionSearch from "../components/AuctionSearch";
 
 import "./AuctioneerAuctions.css";
 
 function AuctioneerAuctions() {
   const [auctions, setAuctions] = useState([]);
 
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
 
   const [currentImages, setCurrentImages] = useState({});
+
+  const initialLoad = useRef(true);
 
   const storedUser = localStorage.getItem("user");
 
@@ -28,38 +35,102 @@ function AuctioneerAuctions() {
     }
   }
 
-  useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
+  const fetchAuctions = async (
+    searchValue = search,
+    categoryValue = category,
+    showLoading = false,
+  ) => {
+    try {
+      if (showLoading) {
         setLoading(true);
+      }
 
-        setError("");
+      setError("");
 
-        const data = await apiRequest("/auctions");
+      const params = new URLSearchParams();
 
-        console.log("Auctioneer auctions received:", data);
+      if (searchValue.trim()) {
+        params.append("search", searchValue.trim());
+      }
 
-        const allAuctions = Array.isArray(data) ? data : data.auctions || [];
+      if (categoryValue) {
+        params.append("category", categoryValue);
+      }
 
-        const myAuctions = allAuctions.filter((auction) => {
-          const auctioneerId =
-            auction.auctioneer_ID?._id || auction.auctioneer_ID;
+      const queryString = params.toString();
 
-          return String(auctioneerId) === String(user?.id);
-        });
+      const endpoint = queryString ? `/auctions?${queryString}` : "/auctions";
 
-        setAuctions(myAuctions);
-      } catch (error) {
-        console.error("Failed to fetch auctioneer auctions:", error);
+      const data = await apiRequest(endpoint);
 
-        setError(error.message || "Failed to load auctions");
-      } finally {
+      console.log("Auctioneer auctions received:", data);
+
+      const allAuctions = Array.isArray(data) ? data : data.auctions || [];
+
+      const allCategories = Array.isArray(data) ? [] : data.categories || [];
+
+      const myAuctions = allAuctions.filter((auction) => {
+        const auctioneerId =
+          auction.auctioneer_ID?._id || auction.auctioneer_ID;
+
+        return String(auctioneerId) === String(user?.id);
+      });
+
+      setAuctions(myAuctions);
+
+      setCategories([...allCategories].sort());
+
+      setCurrentImages({});
+    } catch (error) {
+      console.error("Failed to fetch auctioneer auctions:", error);
+
+      setError(error.message || "Failed to load auctions");
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    fetchAuctions();
+  /*
+   * Initial auction loading.
+   */
+  useEffect(() => {
+    fetchAuctions("", "", true);
   }, []);
+
+  /*
+   * Debounce search and category changes.
+   */
+  useEffect(() => {
+    if (initialLoad.current) {
+      initialLoad.current = false;
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchAuctions(search, category, false);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [search, category]);
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setCategory(value);
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setCategory("");
+
+    fetchAuctions("", "", false);
+  };
 
   const showPreviousImage = (event, auctionId, imageCount) => {
     event.preventDefault();
@@ -156,11 +227,20 @@ function AuctioneerAuctions() {
 
         {error && <div className="auctioneer-auctions-error">{error}</div>}
 
+        <AuctionSearch
+          search={search}
+          category={category}
+          categories={categories}
+          onSearchChange={handleSearchChange}
+          onCategoryChange={handleCategoryChange}
+          onClear={handleClear}
+        />
+
         {auctions.length === 0 && !error && (
           <div className="auctioneer-auctions-empty">
-            <h2>No auctions yet</h2>
+            <h2>No auctions found</h2>
 
-            <p>You haven't created any auctions yet.</p>
+            <p>No auctions match your current search or filter.</p>
 
             <Link
               to="/auctioneer/auctions/create"

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Link } from "react-router-dom";
 
 import Navbar from "../components/Navbar.jsx";
+import AuctionSearch from "../components/AuctionSearch";
 
 import { apiRequest } from "../services/api.js";
 
@@ -10,6 +11,12 @@ import "./AdminAuctions.css";
 
 function AdminAuctions() {
   const [auctions, setAuctions] = useState([]);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+
+  const initialLoad = useRef(true);
 
   const [selectedStatus, setSelectedStatus] = useState("all");
 
@@ -28,29 +35,84 @@ function AdminAuctions() {
     status: "scheduled",
   });
 
-  const fetchAuctions = async () => {
+  const fetchAuctions = async (
+    searchValue = search,
+    categoryValue = category,
+    showLoading = true,
+  ) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
 
       setError("");
 
-      const data = await apiRequest("/auctions");
+      const params = new URLSearchParams();
+
+      if (searchValue.trim()) {
+        params.append("search", searchValue.trim());
+      }
+
+      if (categoryValue) {
+        params.append("category", categoryValue);
+      }
+
+      const queryString = params.toString();
+
+      const endpoint = queryString ? `/auctions?${queryString}` : "/auctions";
+
+      const data = await apiRequest(endpoint);
 
       const allAuctions = Array.isArray(data) ? data : data.auctions || [];
 
+      const allCategories = Array.isArray(data) ? [] : data.categories || [];
+
       setAuctions(allAuctions);
+
+      setCategories([...allCategories].sort());
     } catch (error) {
       console.error("Failed to fetch auctions:", error);
 
       setError(error.message || "Failed to load auctions");
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchAuctions();
+    fetchAuctions("", "", true);
   }, []);
+
+  useEffect(() => {
+    if (initialLoad.current) {
+      initialLoad.current = false;
+
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchAuctions(search, category, false);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [search, category]);
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setCategory(value);
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setCategory("");
+  };
 
   const formatDateTimeLocal = (date) => {
     if (!date) {
@@ -110,6 +172,7 @@ function AdminAuctions() {
 
     setFormData((previous) => ({
       ...previous,
+
       [name]: value,
     }));
   };
@@ -268,8 +331,6 @@ function AdminAuctions() {
 
     const isScheduled = editingAuction.status === "scheduled";
 
-    const isActive = editingAuction.status === "active";
-
     const isCompleted = editingAuction.status === "completed";
 
     const isCancelled = editingAuction.status === "cancelled";
@@ -412,7 +473,7 @@ function AdminAuctions() {
 
           <button
             className="admin-refresh-button"
-            onClick={fetchAuctions}
+            onClick={() => fetchAuctions()}
             disabled={loading || actionLoading}
           >
             Refresh
@@ -422,6 +483,15 @@ function AdminAuctions() {
         {error && !editingAuction && (
           <div className="admin-auctions-error">{error}</div>
         )}
+
+        <AuctionSearch
+          search={search}
+          category={category}
+          categories={categories}
+          onSearchChange={handleSearchChange}
+          onCategoryChange={handleCategoryChange}
+          onClear={handleClear}
+        />
 
         <div className="admin-auction-summary">
           <button

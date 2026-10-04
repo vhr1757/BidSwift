@@ -1,17 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+
 import { apiRequest } from "../services/api.js";
+
 import "./Auctions.css";
+
 import Navbar from "../components/Navbar";
+import AuctionSearch from "../components/AuctionSearch";
 
 function Auctions() {
   const [auctions, setAuctions] = useState([]);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
 
   const [currentImages, setCurrentImages] = useState({});
+
+  const initialLoad = useRef(true);
 
   const showPreviousImage = (event, auctionId, imageCount) => {
     event.preventDefault();
@@ -43,27 +53,89 @@ function Auctions() {
     });
   };
 
-  useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
+  const fetchAuctions = async (
+    searchValue = search,
+    categoryValue = category,
+    showLoading = false,
+  ) => {
+    try {
+      if (showLoading) {
         setLoading(true);
-        setError("");
+      }
 
-        const data = await apiRequest("/auctions");
+      setError("");
 
-        console.log("Auctions received:", data);
+      const params = new URLSearchParams();
 
-        setAuctions(data);
-      } catch (error) {
-        console.error("Failed to fetch auctions:", error);
+      if (searchValue.trim()) {
+        params.append("search", searchValue.trim());
+      }
 
-        setError(error.message || "Failed to load auctions");
-      } finally {
+      if (categoryValue) {
+        params.append("category", categoryValue);
+      }
+
+      const queryString = params.toString();
+
+      const endpoint = queryString ? `/auctions?${queryString}` : "/auctions";
+
+      const data = await apiRequest(endpoint);
+
+      console.log("Auctions received:", data);
+
+      const allAuctions = Array.isArray(data) ? data : data.auctions || [];
+
+      const allCategories = Array.isArray(data) ? [] : data.categories || [];
+
+      setAuctions(allAuctions);
+
+      setCategories([...allCategories].sort());
+
+      setCurrentImages({});
+    } catch (error) {
+      console.error("Failed to fetch auctions:", error);
+
+      setError(error.message || "Failed to load auctions");
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    };
-    fetchAuctions();
+    }
+  };
+
+  useEffect(() => {
+    fetchAuctions("", "", true);
   }, []);
+
+  useEffect(() => {
+    if (initialLoad.current) {
+      initialLoad.current = false;
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchAuctions(search, category, false);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [search, category]);
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setCategory(value);
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setCategory("");
+
+    fetchAuctions("", "", false);
+  };
 
   // LOADING
   if (loading) {
@@ -71,6 +143,7 @@ function Auctions() {
       <div className="auctions-page">
         <div className="auctions-container">
           <h1 className="auctions-logo">BidSwift</h1>
+
           <p className="auctions-message">Loading auctions...</p>
         </div>
       </div>
@@ -82,6 +155,7 @@ function Auctions() {
       <div className="auctions-page">
         <div className="auctions-container">
           <h1 className="auctions-logo">BidSwift</h1>
+
           <p className="auctions-error">{error}</p>
         </div>
       </div>
@@ -91,14 +165,26 @@ function Auctions() {
   return (
     <>
       <Navbar />
+
       <div className="auctions-page">
         <div className="auctions-container">
           <div className="auctions-header">
             <h2 className="auctions-title">Live Auctions</h2>
           </div>
 
+          <AuctionSearch
+            search={search}
+            category={category}
+            categories={categories}
+            onSearchChange={handleSearchChange}
+            onCategoryChange={handleCategoryChange}
+            onClear={handleClear}
+          />
+
           {auctions.length === 0 ? (
-            <div className="auctions-message">No auctions available.</div>
+            <div className="auctions-message">
+              No auctions match your search.
+            </div>
           ) : (
             <div className="auctions-grid">
               {auctions.map((auction) => {

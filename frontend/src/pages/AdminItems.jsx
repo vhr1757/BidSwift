@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 import Navbar from "../components/Navbar.jsx";
+import SearchFilter from "../components/SearchFilter";
 
 import { apiRequest } from "../services/api.js";
 
@@ -8,6 +10,12 @@ import "./AdminItems.css";
 
 function AdminItems() {
   const [items, setItems] = useState([]);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+
+  const initialLoad = useRef(true);
 
   const [selectedStatus, setSelectedStatus] = useState("all");
 
@@ -28,44 +36,94 @@ function AdminItems() {
     status: "available",
   });
 
-  const fetchItems = async () => {
+  const fetchItems = async (
+    searchValue = search,
+    categoryValue = category,
+    showLoading = true,
+  ) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
 
       setError("");
 
-      const data = await apiRequest("/items");
+      const params = new URLSearchParams();
+
+      if (searchValue) {
+        params.append("search", searchValue);
+      }
+
+      if (categoryValue) {
+        params.append("category", categoryValue);
+      }
+
+      const queryString = params.toString();
+
+      const data = await apiRequest(
+        queryString ? `/items?${queryString}` : "/items",
+      );
 
       const allItems = Array.isArray(data) ? data : data.items || [];
 
       setItems(allItems);
+
+      if (!Array.isArray(data) && data.categories) {
+        setCategories(data.categories);
+      }
     } catch (error) {
       console.error("Failed to fetch items:", error);
 
       setError(error.message || "Failed to load items");
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchItems();
+    fetchItems("", "", true);
+
+    initialLoad.current = false;
   }, []);
+
+  useEffect(() => {
+    if (initialLoad.current) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchItems(search, category, false);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [search, category]);
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setCategory(value);
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setCategory("");
+  };
 
   const handleOpenEdit = (item) => {
     setEditingItem(item);
 
     setFormData({
       name: item.name || "",
-
       description: item.description || "",
-
       category: item.category || "",
-
       start_price: item.start_price ?? "",
-
       images: Array.isArray(item.images) ? item.images.join(", ") : "",
-
       status: item.status || "available",
     });
 
@@ -133,25 +191,19 @@ function AdminItems() {
 
       await apiRequest(`/items/${editingItem._id}`, {
         method: "PUT",
-
         body: JSON.stringify({
           name: formData.name.trim(),
-
           description: formData.description.trim(),
-
           category: formData.category.trim(),
-
           start_price: startPrice,
-
           images,
-
           status: formData.status,
         }),
       });
 
       handleCloseEdit();
 
-      await fetchItems();
+      await fetchItems(search, category, false);
     } catch (error) {
       console.error("Failed to update item:", error);
 
@@ -349,7 +401,7 @@ function AdminItems() {
 
           <button
             className="admin-refresh-button"
-            onClick={fetchItems}
+            onClick={() => fetchItems(search, category, true)}
             disabled={loading || actionLoading}
           >
             Refresh
@@ -359,6 +411,15 @@ function AdminItems() {
         {error && !editingItem && (
           <div className="admin-items-error">{error}</div>
         )}
+
+        <SearchFilter
+          search={search}
+          category={category}
+          categories={categories}
+          onSearchChange={handleSearchChange}
+          onCategoryChange={handleCategoryChange}
+          onClear={handleClear}
+        />
 
         <div className="admin-item-summary">
           <button
@@ -420,7 +481,10 @@ function AdminItems() {
               <h2>
                 {selectedStatus === "all"
                   ? "All Items"
-                  : `${selectedStatus.charAt(0).toUpperCase()}${selectedStatus.slice(1)} Items`}
+                  : `${
+                      selectedStatus.charAt(0).toUpperCase() +
+                      selectedStatus.slice(1)
+                    } Items`}
               </h2>
 
               <span>
