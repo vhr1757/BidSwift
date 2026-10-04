@@ -190,6 +190,65 @@
 }
 
 /* ============================================================
+   IMAGE UPLOAD
+   ============================================================ */
+
+.create-item-field input[type="file"] {
+  height: auto;
+
+  padding: 10px;
+
+  background-color: #f8fafc;
+
+  border: 1px dashed #cbd5e1;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+.create-item-field input[type="file"]:hover {
+  border-color: #94a3b8;
+}
+
+.create-item-field input[type="file"]:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.create-item-field input[type="file"]:disabled {
+  cursor: not-allowed;
+}
+
+.create-item-field input[type="file"]::file-selector-button {
+  margin-right: 12px;
+
+  padding: 8px 12px;
+
+  background-color: #e2e8f0;
+
+  border: none;
+
+  border-radius: 6px;
+
+  color: #334155;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: background-color 0.2s ease;
+}
+
+.create-item-field input[type="file"]::file-selector-button:hover {
+  background-color: #cbd5e1;
+}
+
+/* ============================================================
    HINT
    ============================================================ */
 
@@ -197,6 +256,100 @@
   color: #64748b;
 
   font-size: 13px;
+
+  line-height: 1.5;
+}
+
+/* ============================================================
+   IMAGE PREVIEW GRID
+   ============================================================ */
+
+.create-item-image-preview-grid {
+  display: grid;
+
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 6px;
+}
+
+/* ============================================================
+   IMAGE PREVIEW
+   ============================================================ */
+
+.create-item-image-preview {
+  position: relative;
+
+  width: 100%;
+
+  aspect-ratio: 1 / 1;
+
+  overflow: hidden;
+
+  background-color: #e2e8f0;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 8px;
+}
+
+.create-item-image-preview img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+/* ============================================================
+   REMOVE IMAGE BUTTON
+   ============================================================ */
+
+.create-item-image-remove {
+  position: absolute;
+
+  top: 6px;
+  right: 6px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 26px;
+  height: 26px;
+
+  padding: 0;
+
+  background-color: rgba(15, 23, 42, 0.75);
+
+  border: none;
+
+  border-radius: 50%;
+
+  color: white;
+
+  font-family: inherit;
+
+  font-size: 18px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: background-color 0.2s ease;
+}
+
+.create-item-image-remove:hover {
+  background-color: rgba(15, 23, 42, 0.95);
+}
+
+.create-item-image-remove:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
 }
 
 /* ============================================================
@@ -285,6 +438,12 @@
    RESPONSIVE
    ============================================================ */
 
+@media (max-width: 700px) {
+  .create-item-image-preview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 600px) {
   .create-item-container {
     padding: 30px 16px 50px;
@@ -305,5 +464,11 @@
   .create-item-cancel,
   .create-item-submit {
     width: 100%;
+  }
+}
+
+@media (max-width: 450px) {
+  .create-item-image-preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

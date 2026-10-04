@@ -6,6 +6,8 @@ import Auctions from "./pages/Auctions.jsx";
 import AuctionDetails from "./pages/AuctionDetails.jsx";
 import MyBids from "./pages/MyBids.jsx";
 import Wallet from "./pages/Wallet.jsx";
+import BuyerOrders from "./pages/BuyerOrders.jsx";
+import BuyerBills from "./pages/BuyerBills.jsx";
 import Profile from "./pages/Profile.jsx";
 import EditProfile from "./pages/EditProfile.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
@@ -79,6 +81,24 @@ function App() {
             <ProtectedRoute>
               <Wallet />
             </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-orders"
+          element={
+            <RoleProtectedRoute allowedRoles={["buyer"]}>
+              <BuyerOrders />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-bills"
+          element={
+            <RoleProtectedRoute allowedRoles={["buyer"]}>
+              <BuyerBills />
+            </RoleProtectedRoute>
           }
         />
 

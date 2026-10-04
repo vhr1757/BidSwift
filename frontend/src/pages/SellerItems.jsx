@@ -16,6 +16,8 @@ function SellerItems() {
 
   const [deleteLoading, setDeleteLoading] = useState(null);
 
+  const [currentImages, setCurrentImages] = useState({});
+
   const storedUser = localStorage.getItem("user");
 
   let user = null;
@@ -55,6 +57,36 @@ function SellerItems() {
 
     fetchItems();
   }, [user?._id]);
+
+  const showPreviousImage = (event, itemId, imageCount) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setCurrentImages((previous) => {
+      const currentIndex = previous[itemId] || 0;
+
+      return {
+        ...previous,
+
+        [itemId]: currentIndex === 0 ? imageCount - 1 : currentIndex - 1,
+      };
+    });
+  };
+
+  const showNextImage = (event, itemId, imageCount) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setCurrentImages((previous) => {
+      const currentIndex = previous[itemId] || 0;
+
+      return {
+        ...previous,
+
+        [itemId]: currentIndex === imageCount - 1 ? 0 : currentIndex + 1,
+      };
+    });
+  };
 
   const handleDelete = async (itemId) => {
     const confirmed = window.confirm(
@@ -127,57 +159,100 @@ function SellerItems() {
 
         {!loading && items.length > 0 && (
           <div className="seller-items-grid">
-            {items.map((item) => (
-              <div className="seller-item-card" key={item._id}>
+            {items.map((item) => {
+              const images = item.images || [];
 
-                <div className="seller-item-image">
-                  {item.images && item.images.length > 0 ? (
-                    <img src={item.images[0]} alt={item.name} />
-                  ) : (
-                    <div className="seller-item-image-placeholder">
-                      No Image
+              const currentImageIndex = currentImages[item._id] || 0;
+
+              return (
+                <div className="seller-item-card" key={item._id}>
+                  <div className="seller-item-image">
+                    {images.length > 0 ? (
+                      <>
+                        <img src={images[currentImageIndex]} alt={item.name} />
+
+                        {images.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              className="seller-item-image-nav-button seller-item-image-nav-left"
+                              onClick={(event) =>
+                                showPreviousImage(
+                                  event,
+                                  item._id,
+                                  images.length,
+                                )
+                              }
+                            >
+                              &#10094;
+                            </button>
+
+                            <button
+                              type="button"
+                              className="seller-item-image-nav-button seller-item-image-nav-right"
+                              onClick={(event) =>
+                                showNextImage(event, item._id, images.length)
+                              }
+                            >
+                              &#10095;
+                            </button>
+
+                            <div className="seller-item-image-counter">
+                              {currentImageIndex + 1}
+                              {" / "}
+                              {images.length}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <div className="seller-item-image-placeholder">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="seller-item-content">
+                    <div className="seller-item-top">
+                      <h2 className="seller-item-title">{item.name}</h2>
+
+                      <span className={`seller-item-status ${item.status}`}>
+                        {item.status}
+                      </span>
                     </div>
-                  )}
-                </div>
 
-                <div className="seller-item-content">
-                  <div className="seller-item-top">
-                    <h2 className="seller-item-title">{item.name}</h2>
+                    <p className="seller-item-category">{item.category}</p>
 
-                    <span className={`seller-item-status ${item.status}`}>
-                      {item.status}
-                    </span>
-                  </div>
+                    <p className="seller-item-description">
+                      {item.description}
+                    </p>
 
-                  <p className="seller-item-category">{item.category}</p>
+                    <div className="seller-item-info">
+                      <span>Starting Price</span>
 
-                  <p className="seller-item-description">{item.description}</p>
+                      <strong>₹{item.start_price}</strong>
+                    </div>
 
-                  <div className="seller-item-info">
-                    <span>Starting Price</span>
+                    <div className="seller-item-actions">
+                      <Link
+                        to={`/seller/items/${item._id}/edit`}
+                        className="seller-item-edit-button"
+                      >
+                        Edit
+                      </Link>
 
-                    <strong>₹{item.start_price}</strong>
-                  </div>
-
-                  <div className="seller-item-actions">
-                    <Link
-                      to={`/seller/items/${item._id}/edit`}
-                      className="seller-item-edit-button"
-                    >
-                      Edit
-                    </Link>
-
-                    <button
-                      className="seller-item-delete-button"
-                      onClick={() => handleDelete(item._id)}
-                      disabled={deleteLoading === item._id}
-                    >
-                      {deleteLoading === item._id ? "Deleting..." : "Delete"}
-                    </button>
+                      <button
+                        className="seller-item-delete-button"
+                        onClick={() => handleDelete(item._id)}
+                        disabled={deleteLoading === item._id}
+                      >
+                        {deleteLoading === item._id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

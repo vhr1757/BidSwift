@@ -8,6 +8,7 @@ import { createServer } from "http";
 import { initializeSocket } from "./config/socket.js";
 import connectDB from "./config/db.js";
 import redisClient from "./config/redis.js";
+import startOrderExpiryService from "./utils/orderExpiryService.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import buyerRoutes from "./routes/buyerRoutes.js";
 import auctioneerRoutes from "./routes/auctioneerRoutes.js";
@@ -25,9 +26,8 @@ const app = express();
 app.use(express.json());
 
 const httpServer = createServer(app);
-const io = initializeSocket(
-    httpServer
-);
+
+const PORT = process.env.PORT || 3000;
 
 app.use(
     cors({
@@ -35,12 +35,16 @@ app.use(
     })
 );
 
-const PORT = process.env.PORT || 3000;
-
 await redisClient.connect();
 console.log("Redis connected successfully");
 
+const io = await initializeSocket(
+    httpServer
+);
+
 connectDB();
+
+startOrderExpiryService();
 
 io.on("connection", (socket) => {
     console.log(

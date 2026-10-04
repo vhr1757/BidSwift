@@ -45,6 +45,14 @@ function Navbar() {
 
             <button onClick={() => navigate("/wallet")}>Wallet</button>
 
+            <button type="button" onClick={() => navigate("/my-orders")}>
+              My Orders
+            </button>
+
+            <button type="button" onClick={() => navigate("/my-bills")}>
+              My Bills
+            </button>
+
             <button onClick={() => navigate("/profile")}>Profile</button>
           </>
         )}

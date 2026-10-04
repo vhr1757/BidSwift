@@ -7,7 +7,8 @@ import {
     getOrderByID,
     createOrder,
     updateOrder,
-    deleteOrder
+    deleteOrder,
+    confirmOrder
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -45,6 +46,13 @@ router.delete(
     authMiddleware,
     authorizeRoles("buyer", "admin"),
     deleteOrder
+);
+
+router.post(
+    "/:id/confirm",
+    authMiddleware,
+    authorizeRoles("seller"),
+    confirmOrder
 );
 
 export default router;

@@ -1,10 +1,14 @@
 import mongoose from "mongoose";
 import Wallet from "../models/Wallet.js";
+import Order from "../models/Order.js";
 import runTransactionWithRetry from "../utils/transactionRetry.js";
 import Auction from "../models/Auction.js";
 import Item from "../models/Item.js";
 import redisClient from "../config/redis.js";
-import { emitAuctionStatusUpdate } from "../utils/socketEvents.js";
+import {
+  emitAuctionStatusUpdate,
+  emitAuctionUpdated,
+} from "../utils/socketEvents.js";
 
 const getAllAuctions = async (req, res) => {
   try {
@@ -220,6 +224,8 @@ const updateAuction = async (req, res) => {
 
     await auction.save();
 
+    emitAuctionUpdated(req.params.id, auction);
+
     res.status(200).json({
       message: "Auction updated successfully",
       auction,
@@ -353,8 +359,6 @@ const settleAuction = async (auctionId) => {
           throw new Error("ITEM_NOT_FOUND");
         }
 
-        // No bids:
-        // simply complete the auction.
         if (
           auction.highest_bidder_ID === null ||
           auction.highest_bid_amount === null
@@ -370,61 +374,45 @@ const settleAuction = async (auctionId) => {
           return;
         }
 
-        const winnerWallet = await Wallet.findOne({
-          buyer_ID: auction.highest_bidder_ID,
-        }).session(session);
-
-        if (!winnerWallet) {
-          throw new Error("WINNER_WALLET_NOT_FOUND");
-        }
-
-        const winningAmount = auction.highest_bid_amount;
-
-        if (winnerWallet.frozen_amount < winningAmount) {
-          throw new Error("WINNER_FREEZE_INCONSISTENT");
-        }
-
-        if (winnerWallet.balance < winningAmount) {
-          throw new Error("WINNER_INSUFFICIENT_BALANCE");
-        }
-
-        winnerWallet.balance -= winningAmount;
-
-        winnerWallet.frozen_amount -= winningAmount;
-
-        winnerWallet.transaction_history.push({
-          type: "payment",
-          amount: winningAmount,
-        });
-
-        await winnerWallet.save({
-          session,
-        });
-
-        createdOrder = await Order.create(
-          [
-            {
-              buyer_ID: auction.highest_bidder_ID,
-
-              item_ID: auction.item_ID._id,
-
-              total_amount: winningAmount,
-
-              status: "confirmed",
-            },
-          ],
-          {
-            session,
-          },
+        const expiryHours = Number(
+          process.env.ORDER_CONFIRMATION_EXPIRY_HOURS || 24,
         );
 
-        createdOrder = createdOrder[0];
+        const confirmationDeadline = new Date(
+          Date.now() + expiryHours * 60 * 60 * 1000,
+        );
 
-        auction.item_ID.status = "sold";
+        const existingOrder = await Order.findOne({
+          item_ID: auction.item_ID._id,
+          buyer_ID: auction.highest_bidder_ID,
+          total_amount: auction.highest_bid_amount,
+          status: "pending",
+        }).session(session);
 
-        await auction.item_ID.save({
-          session,
-        });
+        if (existingOrder) {
+          createdOrder = existingOrder;
+        } else {
+          const orders = await Order.create(
+            [
+              {
+                buyer_ID: auction.highest_bidder_ID,
+
+                item_ID: auction.item_ID._id,
+
+                total_amount: auction.highest_bid_amount,
+
+                confirmation_deadline: confirmationDeadline,
+
+                status: "pending",
+              },
+            ],
+            {
+              session,
+            },
+          );
+
+          createdOrder = orders[0];
+        }
 
         auction.status = "completed";
 
@@ -447,6 +435,7 @@ const settleAuction = async (auctionId) => {
 
     return {
       auction: completedAuction,
+
       order: createdOrder,
     };
   } finally {
@@ -459,7 +448,7 @@ const completeAuction = async (req, res) => {
     const result = await settleAuction(req.params.id);
 
     return res.status(200).json({
-      message: "Auction completed and winner settlement successful",
+      message: "Auction completed and pending order created",
 
       auction: result.auction,
 
@@ -495,25 +484,6 @@ const completeAuction = async (req, res) => {
     if (error.message === "ITEM_NOT_FOUND") {
       return res.status(404).json({
         message: "Item associated with this auction not found",
-      });
-    }
-
-    if (error.message === "WINNER_WALLET_NOT_FOUND") {
-      return res.status(404).json({
-        message: "Winner wallet not found",
-      });
-    }
-
-    if (error.message === "WINNER_FREEZE_INCONSISTENT") {
-      return res.status(500).json({
-        message: "Winner wallet reservation is inconsistent",
-      });
-    }
-
-    if (error.message === "WINNER_INSUFFICIENT_BALANCE") {
-      return res.status(400).json({
-        message:
-          "Winner does not have enough wallet balance to complete payment",
       });
     }
 

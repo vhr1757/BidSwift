@@ -403,6 +403,189 @@
 }
 
 /* ============================================================
+   SELLER CONFIRMATION DEADLINE
+   ============================================================ */
+
+.seller-order-deadline {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 16px;
+
+  margin-top: 20px;
+
+  padding: 14px 16px;
+
+  background-color: #eff6ff;
+
+  border: 1px solid #bfdbfe;
+
+  border-radius: 10px;
+
+  color: #1e40af;
+
+  font-size: 14px;
+}
+
+.seller-order-deadline strong {
+  font-size: 15px;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.seller-order-deadline.expired {
+  background-color: #fef2f2;
+
+  border-color: #fecaca;
+
+  color: #b91c1c;
+}
+
+/* ============================================================
+   SELLER CONFIRMATION
+   ============================================================ */
+
+.seller-order-confirmation {
+  margin-top: 20px;
+
+  padding: 18px;
+
+  background-color: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 10px;
+}
+
+.seller-order-confirmation > label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #0f172a;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.seller-order-tax-row {
+  display: flex;
+
+  gap: 10px;
+}
+
+.seller-order-tax-row input {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 44px;
+
+  padding: 0 12px;
+
+  background-color: white;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 8px;
+
+  color: #0f172a;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+.seller-order-tax-row input:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.seller-order-tax-row input:disabled {
+  background-color: #f1f5f9;
+
+  cursor: not-allowed;
+}
+
+.seller-order-confirm-button {
+  height: 44px;
+
+  padding: 0 20px;
+
+  background-color: #16a34a;
+
+  border: none;
+
+  border-radius: 8px;
+
+  color: white;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.seller-order-confirm-button:hover:not(:disabled) {
+  background-color: #15803d;
+
+  transform: translateY(-1px);
+}
+
+.seller-order-confirm-button:disabled {
+  background-color: #94a3b8;
+
+  cursor: not-allowed;
+}
+
+.seller-order-confirmation small {
+  display: block;
+
+  margin-top: 10px;
+
+  color: #64748b;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+/* ============================================================
+   EXPIRED ORDER
+   ============================================================ */
+
+.seller-order-expired {
+  margin-top: 20px;
+
+  padding: 14px 16px;
+
+  background-color: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 8px;
+
+  color: #b91c1c;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 
@@ -453,5 +636,13 @@
   .seller-order-item strong,
   .seller-order-info strong {
     text-align: left;
+  }
+
+  .seller-order-tax-row {
+    flex-direction: column;
+  }
+
+  .seller-order-confirm-button {
+    width: 100%;
   }
 }

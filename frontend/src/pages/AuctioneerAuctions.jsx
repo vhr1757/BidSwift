@@ -14,6 +14,8 @@ function AuctioneerAuctions() {
 
   const [error, setError] = useState("");
 
+  const [currentImages, setCurrentImages] = useState({});
+
   const storedUser = localStorage.getItem("user");
 
   let user = null;
@@ -58,6 +60,36 @@ function AuctioneerAuctions() {
 
     fetchAuctions();
   }, []);
+
+  const showPreviousImage = (event, auctionId, imageCount) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setCurrentImages((previous) => {
+      const currentIndex = previous[auctionId] || 0;
+
+      return {
+        ...previous,
+
+        [auctionId]: currentIndex === 0 ? imageCount - 1 : currentIndex - 1,
+      };
+    });
+  };
+
+  const showNextImage = (event, auctionId, imageCount) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setCurrentImages((previous) => {
+      const currentIndex = previous[auctionId] || 0;
+
+      return {
+        ...previous,
+
+        [auctionId]: currentIndex === imageCount - 1 ? 0 : currentIndex + 1,
+      };
+    });
+  };
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -141,78 +173,133 @@ function AuctioneerAuctions() {
 
         {auctions.length > 0 && (
           <div className="auctioneer-auctions-grid">
-            {auctions.map((auction) => (
-              <div className="auctioneer-auction-card" key={auction._id}>
-                <div className="auctioneer-auction-card-header">
-                  <h2>{auction.item_ID?.name || "Auction Item"}</h2>
+            {auctions.map((auction) => {
+              const images = auction.item_ID?.images || [];
 
-                  <span
-                    className={`auctioneer-auction-status ${getStatusClass(
-                      auction.status,
-                    )}`}
-                  >
-                    {auction.status}
-                  </span>
+              const currentImageIndex = currentImages[auction._id] || 0;
+
+              return (
+                <div className="auctioneer-auction-card" key={auction._id}>
+                  <div className="auctioneer-auction-image">
+                    {images.length > 0 ? (
+                      <>
+                        <img
+                          src={images[currentImageIndex]}
+                          alt={auction.item_ID?.name || "Auction Item"}
+                        />
+
+                        {images.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              className="auctioneer-image-nav-button auctioneer-image-nav-left"
+                              onClick={(event) =>
+                                showPreviousImage(
+                                  event,
+                                  auction._id,
+                                  images.length,
+                                )
+                              }
+                            >
+                              &#10094;
+                            </button>
+
+                            <button
+                              type="button"
+                              className="auctioneer-image-nav-button auctioneer-image-nav-right"
+                              onClick={(event) =>
+                                showNextImage(event, auction._id, images.length)
+                              }
+                            >
+                              &#10095;
+                            </button>
+
+                            <div className="auctioneer-image-counter">
+                              {currentImageIndex + 1}
+                              {" / "}
+                              {images.length}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <div className="auctioneer-image-placeholder">
+                        No Image Available
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="auctioneer-auction-card-header">
+                    <h2>{auction.item_ID?.name || "Auction Item"}</h2>
+
+                    <span
+                      className={`auctioneer-auction-status ${getStatusClass(
+                        auction.status,
+                      )}`}
+                    >
+                      {auction.status}
+                    </span>
+                  </div>
+
+                  <div className="auctioneer-auction-info">
+                    <span>Category</span>
+
+                    <strong>{auction.item_ID?.category || "—"}</strong>
+                  </div>
+
+                  <div className="auctioneer-auction-info">
+                    <span>Starting Price</span>
+
+                    <strong>₹{auction.item_ID?.start_price ?? "—"}</strong>
+                  </div>
+
+                  <div className="auctioneer-auction-info">
+                    <span>Current Bid</span>
+
+                    <strong>
+                      ₹
+                      {auction.highest_bid_amount ??
+                        auction.item_ID?.start_price ??
+                        "—"}
+                    </strong>
+                  </div>
+
+                  <div className="auctioneer-auction-info">
+                    <span>Bid Increment</span>
+
+                    <strong>₹{auction.bid_increment ?? "—"}</strong>
+                  </div>
+
+                  <div className="auctioneer-auction-info">
+                    <span>Starts</span>
+
+                    <strong>{formatDate(auction.start_time)}</strong>
+                  </div>
+
+                  <div className="auctioneer-auction-info">
+                    <span>Ends</span>
+
+                    <strong>{formatDate(auction.end_time)}</strong>
+                  </div>
+
+                  <div className="auctioneer-auction-actions">
+                    <Link
+                      to={`/auctions/${auction._id}`}
+                      className="auctioneer-view-button"
+                    >
+                      View Auction
+                    </Link>
+
+                    <Link
+                      to={`/auctioneer/auctions/${auction._id}/edit`}
+                      className="auctioneer-edit-button"
+                    >
+                      Edit
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="auctioneer-auction-info">
-                  <span>Category</span>
-
-                  <strong>{auction.item_ID?.category || "—"}</strong>
-                </div>
-
-                <div className="auctioneer-auction-info">
-                  <span>Starting Price</span>
-
-                  <strong>₹{auction.item_ID?.start_price ?? "—"}</strong>
-                </div>
-
-                <div className="auctioneer-auction-info">
-                  <span>Current Bid</span>
-
-                  <strong>
-                    ₹
-                    {auction.highest_bid_amount ??
-                      auction.item_ID?.start_price ??
-                      "—"}
-                  </strong>
-                </div>
-
-                <div className="auctioneer-auction-info">
-                  <span>Bid Increment</span>
-
-                  <strong>₹{auction.bid_increment ?? "—"}</strong>
-                </div>
-
-                <div className="auctioneer-auction-info">
-                  <span>Starts</span>
-
-                  <strong>{formatDate(auction.start_time)}</strong>
-                </div>
-
-                <div className="auctioneer-auction-info">
-                  <span>Ends</span>
-
-                  <strong>{formatDate(auction.end_time)}</strong>
-                </div>
-
-                <div className="auctioneer-auction-actions">
-                  <Link
-                    to={`/auctions/${auction._id}`}
-                    className="auctioneer-view-button"
-                  >
-                    View Auction
-                  </Link>
-
-                  <Link
-                    to={`/auctioneer/auctions/${auction._id}/edit`}
-                    className="auctioneer-edit-button"
-                  >
-                    Edit
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

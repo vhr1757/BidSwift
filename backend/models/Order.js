@@ -25,9 +25,20 @@ const orderSchema = new mongoose.Schema(
             min: 0
         },
 
+        confirmation_deadline: {
+            type: Date,
+            default: null
+        },
+
         status: {
             type: String,
-            enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+            enum: [
+                "pending",
+                "confirmed",
+                "shipped",
+                "delivered",
+                "cancelled"
+            ],
             default: "pending"
         }
     },
@@ -36,4 +47,7 @@ const orderSchema = new mongoose.Schema(
     }
 );
 
-export default mongoose.model("Order", orderSchema);
+export default mongoose.model(
+    "Order",
+    orderSchema
+);

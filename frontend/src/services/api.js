@@ -1,109 +1,65 @@
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = "http://localhost/api";
 
 // COMMON API REQUEST FUNCTION
-const apiRequest = async (
-    endpoint,
-    options = {}
-) => {
+const apiRequest = async (endpoint, options = {}) => {
+  const token = localStorage.getItem("accessToken");
 
-    const token = localStorage.getItem(
-        "accessToken"
-    );
+  const headers = {
+    ...options.headers,
+  };
 
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
-    const headers = {
-        "Content-Type": "application/json",
-        ...options.headers
-    };
+  // Add JWT when available
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
-    // Add JWT when available
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
-    }
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
 
+  const data = await response.json();
 
-    const response = await fetch(
-        `${API_BASE_URL}${endpoint}`,
-        {
-            ...options,
-            headers
-        }
-    );
+  // INVALID / EXPIRED TOKEN
+  if (response.status === 401 && token) {
+    localStorage.removeItem("accessToken");
 
+    localStorage.removeItem("user");
 
-    const data = await response.json();
+    window.location.href = "/login";
 
+    return;
+  }
 
-    // INVALID / EXPIRED TOKEN
-    if (
-        response.status === 401 &&
-        token
-    ) {
+  // OTHER API ERRORS
+  if (!response.ok) {
+    throw new Error(data.message || "Something went wrong");
+  }
 
-        localStorage.removeItem(
-            "accessToken"
-        );
-
-        localStorage.removeItem(
-            "user"
-        );
-
-        window.location.href = "/login";
-
-        return;
-    }
-
-
-    // OTHER API ERRORS
-    if (!response.ok) {
-
-        throw new Error(
-            data.message ||
-            "Something went wrong"
-        );
-
-    }
-
-
-    return data;
+  return data;
 };
-
 
 // REGISTER
 const registerUser = async (userData) => {
+  return apiRequest("/auth/register", {
+    method: "POST",
 
-    return apiRequest(
-        "/auth/register",
-        {
-            method: "POST",
-
-            body: JSON.stringify(
-                userData
-            )
-        }
-    );
+    body: JSON.stringify(userData),
+  });
 };
-
 
 // LOGIN
 const loginUser = async (userData) => {
+  return apiRequest("/auth/login", {
+    method: "POST",
 
-    return apiRequest(
-        "/auth/login",
-        {
-            method: "POST",
-
-            body: JSON.stringify(
-                userData
-            )
-        }
-    );
+    body: JSON.stringify(userData),
+  });
 };
-
 
 // EXPORTS
-export {
-    apiRequest,
-    registerUser,
-    loginUser
-};
+export { apiRequest, registerUser, loginUser };

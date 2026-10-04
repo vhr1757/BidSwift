@@ -15,8 +15,9 @@ function CreateItem() {
     description: "",
     category: "",
     start_price: "",
-    images: "",
   });
+
+  const [selectedImages, setSelectedImages] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +32,50 @@ function CreateItem() {
       ...previousData,
       [name]: value,
     }));
+  };
+
+  const handleImageChange = (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    if (selectedImages.length + files.length > 5) {
+      setError("You can upload a maximum of 5 images");
+      event.target.value = "";
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    const invalidFile = files.find((file) => !allowedTypes.includes(file.type));
+
+    if (invalidFile) {
+      setError("Only JPG, PNG and WebP images are allowed");
+      event.target.value = "";
+      return;
+    }
+
+    const oversizedFile = files.find((file) => file.size > 5 * 1024 * 1024);
+
+    if (oversizedFile) {
+      setError("Each image must be smaller than 5 MB");
+      event.target.value = "";
+      return;
+    }
+
+    setError("");
+
+    setSelectedImages((previousImages) => [...previousImages, ...files]);
+
+    event.target.value = "";
+  };
+
+  const removeImage = (indexToRemove) => {
+    setSelectedImages((previousImages) =>
+      previousImages.filter((_, index) => index !== indexToRemove),
+    );
   };
 
   const handleSubmit = async (event) => {
@@ -67,24 +112,31 @@ function CreateItem() {
       return;
     }
 
-    const images = formData.images
-      .split(",")
-      .map((image) => image.trim())
-      .filter((image) => image.length > 0);
+    if (selectedImages.length === 0) {
+      setError("Please select at least one image");
+      return;
+    }
 
     try {
       setLoading(true);
 
+      const requestData = new FormData();
+
+      requestData.append("name", name);
+
+      requestData.append("description", description);
+
+      requestData.append("category", category);
+
+      requestData.append("start_price", startPrice);
+
+      selectedImages.forEach((image) => {
+        requestData.append("images", image);
+      });
+
       const data = await apiRequest("/items", {
         method: "POST",
-
-        body: JSON.stringify({
-          name,
-          description,
-          category,
-          start_price: startPrice,
-          images,
-        }),
+        body: requestData,
       });
 
       console.log("Item created successfully:", data);
@@ -181,21 +233,47 @@ function CreateItem() {
             </div>
 
             <div className="create-item-field">
-              <label htmlFor="images">Image URLs</label>
+              <label htmlFor="images">Item Images</label>
 
               <input
                 id="images"
                 name="images"
-                type="text"
-                value={formData.images}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg, https://example.com/image2.jpg"
-                disabled={loading}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleImageChange}
+                disabled={loading || selectedImages.length >= 5}
               />
 
               <span className="create-item-hint">
-                Enter multiple image URLs separated by commas.
+                Select up to 5 images. JPG, PNG and WebP only. Maximum 5 MB per
+                image.
               </span>
+
+              {selectedImages.length > 0 && (
+                <div className="create-item-image-preview-grid">
+                  {selectedImages.map((image, index) => (
+                    <div
+                      className="create-item-image-preview"
+                      key={`${image.name}-${index}`}
+                    >
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`Preview ${index + 1}`}
+                      />
+
+                      <button
+                        type="button"
+                        className="create-item-image-remove"
+                        onClick={() => removeImage(index)}
+                        disabled={loading}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="create-item-actions">

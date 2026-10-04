@@ -1,6 +1,7 @@
 import express from "express";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import authorizeRoles from "../middlewares/roleMiddleware.js";
+import upload from "../middlewares/upload.js";
 
 import {
     getAllItems,
@@ -20,6 +21,7 @@ router.post(
     "/",
     authMiddleware,
     authorizeRoles("seller"),
+    upload.array("images", 5),
     createItem
 );
 

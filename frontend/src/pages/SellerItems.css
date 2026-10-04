@@ -195,9 +195,9 @@
 .seller-items-grid {
   display: grid;
 
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 
-  gap: 24px;
+  gap: 20px;
 }
 
 /* ============================================================
@@ -235,11 +235,18 @@
    ============================================================ */
 
 .seller-item-image {
+  position: relative;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
   width: 100%;
 
-  height: 220px;
+  height: 180px;
 
-  background-color: #e2e8f0;
+  background-color: #f8fafc;
 
   overflow: hidden;
 }
@@ -248,13 +255,13 @@
   width: 100%;
   height: 100%;
 
-  object-fit: cover;
+  object-fit: contain;
 
   transition: transform 0.3s ease;
 }
 
 .seller-item-card:hover .seller-item-image img {
-  transform: scale(1.04);
+  transform: scale(1.02);
 }
 
 .seller-item-image-placeholder {
@@ -272,6 +279,77 @@
 }
 
 /* ============================================================
+   IMAGE NAVIGATION
+   ============================================================ */
+
+.seller-item-image-nav-button {
+  position: absolute;
+
+  top: 50%;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+
+  background-color: rgba(15, 23, 42, 0.55);
+
+  border: none;
+
+  border-radius: 50%;
+
+  color: white;
+
+  font-size: 18px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transform: translateY(-50%);
+
+  transition: background-color 0.2s ease;
+}
+
+.seller-item-image-nav-button:hover {
+  background-color: rgba(15, 23, 42, 0.8);
+}
+
+.seller-item-image-nav-left {
+  left: 10px;
+}
+
+.seller-item-image-nav-right {
+  right: 10px;
+}
+
+/* ============================================================
+   IMAGE COUNTER
+   ============================================================ */
+
+.seller-item-image-counter {
+  position: absolute;
+
+  right: 10px;
+  bottom: 10px;
+
+  padding: 4px 8px;
+
+  background-color: rgba(15, 23, 42, 0.65);
+
+  border-radius: 10px;
+
+  color: white;
+
+  font-size: 12px;
+}
+
+/* ============================================================
    ITEM CONTENT
    ============================================================ */
 
@@ -282,7 +360,7 @@
 
   flex: 1;
 
-  padding: 24px;
+  padding: 18px;
 }
 
 .seller-item-top {
@@ -291,9 +369,9 @@
   justify-content: space-between;
   align-items: flex-start;
 
-  gap: 15px;
+  gap: 12px;
 
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 
 .seller-item-title {
@@ -301,31 +379,31 @@
 
   color: #0f172a;
 
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 700;
 
   line-height: 1.3;
 }
 
 .seller-item-category {
-  margin: 0 0 15px;
+  margin: 0 0 12px;
 
   color: #2563eb;
 
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .seller-item-description {
   display: -webkit-box;
 
-  margin: 0 0 20px;
+  margin: 0 0 16px;
 
   color: #64748b;
 
-  font-size: 14px;
+  font-size: 13px;
 
-  line-height: 1.6;
+  line-height: 1.5;
 
   -webkit-line-clamp: 3;
   line-clamp: 3;
@@ -341,11 +419,11 @@
 .seller-item-status {
   display: inline-block;
 
-  padding: 6px 12px;
+  padding: 5px 10px;
 
   border-radius: 999px;
 
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
 
   text-transform: capitalize;
@@ -381,9 +459,9 @@
   justify-content: space-between;
   align-items: center;
 
-  min-height: 48px;
+  min-height: 42px;
 
-  padding: 10px 0;
+  padding: 8px 0;
 
   margin-top: auto;
 
@@ -394,13 +472,13 @@
 .seller-item-info span {
   color: #64748b;
 
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .seller-item-info strong {
   color: #0f172a;
 
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
 }
 
@@ -413,9 +491,9 @@
 
   grid-template-columns: 1fr 1fr;
 
-  gap: 12px;
+  gap: 10px;
 
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .seller-item-edit-button,
@@ -424,11 +502,11 @@
 
   width: 100%;
 
-  padding: 11px 14px;
+  padding: 9px 12px;
 
   border-radius: 8px;
 
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 
   text-align: center;
@@ -486,9 +564,9 @@
    RESPONSIVE
    ============================================================ */
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .seller-items-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -516,15 +594,15 @@
 
 @media (max-width: 500px) {
   .seller-item-content {
-    padding: 20px;
+    padding: 16px;
   }
 
   .seller-item-image {
-    height: 190px;
+    height: 170px;
   }
 
   .seller-item-title {
-    font-size: 19px;
+    font-size: 18px;
   }
 
   .seller-item-top {

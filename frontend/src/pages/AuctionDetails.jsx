@@ -197,6 +197,13 @@ function AuctionDetails() {
           return [data.bid, ...previousBids];
         });
       }
+
+      if (data.endTime) {
+        setAuction((previousAuction) => ({
+          ...previousAuction,
+          end_time: data.endTime,
+        }));
+      }
     };
 
     socket.on("bidUpdated", handleBidUpdated);
@@ -233,6 +240,42 @@ function AuctionDetails() {
 
     return () => {
       socket.off("auctionStatusUpdated", handleAuctionStatusUpdated);
+    };
+  }, [id]);
+
+  useEffect(() => {
+    const handleAuctionUpdated = (data) => {
+      console.log("Auction update received:", data);
+
+      // Ignore other auctions.
+
+      if (String(data.auctionId) !== String(id)) {
+        return;
+      }
+
+      setAuction((previousAuction) => {
+        if (!previousAuction) {
+          return previousAuction;
+        }
+
+        return {
+          ...previousAuction,
+
+          start_time: data.startTime ?? previousAuction.start_time,
+
+          end_time: data.endTime ?? previousAuction.end_time,
+
+          status: data.status ?? previousAuction.status,
+
+          bid_increment: data.bidIncrement ?? previousAuction.bid_increment,
+        };
+      });
+    };
+
+    socket.on("auctionUpdated", handleAuctionUpdated);
+
+    return () => {
+      socket.off("auctionUpdated", handleAuctionUpdated);
     };
   }, [id]);
 
